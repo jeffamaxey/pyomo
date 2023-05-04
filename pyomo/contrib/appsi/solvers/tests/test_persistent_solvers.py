@@ -410,7 +410,7 @@ class TestSolvers(unittest.TestCase):
         m.y = pe.Var()
         m.obj = pe.Objective(expr=m.y)
         m.c1 = pe.Constraint(expr=m.y - m.x >= 0)
-        m.c2 = pe.Constraint(expr=m.y + m.x - 2 >= 0)
+        m.c2 = pe.Constraint(expr=m.y + m.x >= 2)
 
         res = opt.solve(m)
         self.assertAlmostEqual(m.x.value, 1)
@@ -629,17 +629,15 @@ class TestSolvers(unittest.TestCase):
                 self.assertAlmostEqual(m.y.value, a1 * (b2 - b1) / (a1 - a2) + b1, 6)
                 self.assertAlmostEqual(res.best_feasible_objective, m.y.value, 6)
                 self.assertTrue(res.best_objective_bound <= m.y.value + 1e-12)
-                duals = opt.get_duals()
-                self.assertAlmostEqual(duals[m.con1], (1 + a1 / (a2 - a1)), 6)
-                self.assertAlmostEqual(duals[m.con2], -a1 / (a2 - a1), 6)
             else:
                 self.assertAlmostEqual(m.x.value, (c2 - c1) / (a1 - a2), 6)
                 self.assertAlmostEqual(m.y.value, a1 * (c2 - c1) / (a1 - a2) + c1, 6)
                 self.assertAlmostEqual(res.best_feasible_objective, m.y.value, 6)
                 self.assertTrue(res.best_objective_bound >= m.y.value - 1e-12)
-                duals = opt.get_duals()
-                self.assertAlmostEqual(duals[m.con1], (1 + a1 / (a2 - a1)), 6)
-                self.assertAlmostEqual(duals[m.con2], -a1 / (a2 - a1), 6)
+
+            duals = opt.get_duals()
+            self.assertAlmostEqual(duals[m.con1], (1 + a1 / (a2 - a1)), 6)
+            self.assertAlmostEqual(duals[m.con2], -a1 / (a2 - a1), 6)
 
     @parameterized.expand(input=all_solvers)
     def test_add_and_remove_vars(self, name: str, opt_class: Type[PersistentSolver]):
@@ -833,8 +831,8 @@ class TestSolvers(unittest.TestCase):
         m.x = pe.Var(m.jobs, m.tasks, bounds=(0, 1))
 
         random.seed(0)
-        coefs = list()
-        lin_vars = list()
+        coefs = []
+        lin_vars = []
         for j in m.jobs:
             for t in m.tasks:
                 coefs.append(random.uniform(0, 10))
@@ -850,10 +848,7 @@ class TestSolvers(unittest.TestCase):
         for t in m.tasks:
             expr = LinearExpression(linear_coefs=[1]*N, linear_vars=[m.x[j, t] for j in m.jobs], constant=0)
             m.c2[t] = expr == 1
-        if type(opt) is Ipopt:
-            opt.config.time_limit = 1e-6
-        else:
-            opt.config.time_limit = 0
+        opt.config.time_limit = 1e-6 if type(opt) is Ipopt else 0
         opt.config.load_solution = False
         res = opt.solve(m)
         if type(opt) is Cbc:  # I can't figure out why CBC is reporting max iter...

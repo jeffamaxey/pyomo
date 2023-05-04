@@ -173,37 +173,26 @@ def check_skip(name):
 
     if name in solver_dependencies:
         solvers_ = solver_dependencies[name]
-        if not all([solver_available[i] for i in solvers_]):
-            # Skip the test because a solver is not available
-            _missing = []
-            for i in solvers_:
-                if not solver_available[i]:
-                    _missing.append(i)
-            return "Solver%s %s %s not available" % (
-                's' if len(_missing) > 1 else '',
-                ", ".join(_missing),
-                'are' if len(_missing) > 1 else 'is',)
+        if not all(solver_available[i] for i in solvers_):
+            _missing = [i for i in solvers_ if not solver_available[i]]
+            return f"""Solver{'s' if len(_missing) > 1 else ''} {", ".join(_missing)} {'are' if len(_missing) > 1 else 'is'} not available"""
 
     if name in package_dependencies:
         packages_ = package_dependencies[name]
-        if not all([package_available[i] for i in packages_]):
-            # Skip the test because a package is not available
-            _missing = []
-            for i in packages_:
-                if not package_available[i]:
-                    _missing.append(i)
-            return "Package%s %s %s not available" % (
-                's' if len(_missing) > 1 else '',
-                ", ".join(_missing),
-                'are' if len(_missing) > 1 else 'is',)
+        if not all(package_available[i] for i in packages_):
+            _missing = [i for i in packages_ if not package_available[i]]
+            return f"""Package{'s' if len(_missing) > 1 else ''} {", ".join(_missing)} {'are' if len(_missing) > 1 else 'is'} not available"""
 
         # This is a hack, xlrd dropped support for .xlsx files in 2.0.1 which
         # causes problems with older versions of Pandas<=1.1.5 so skipping
         # tests requiring both these packages when incompatible versions are found
-        if 'pandas' in package_dependencies[name] and 'xlrd' in package_dependencies[name]:
-            if check_min_version(package_modules['xlrd'], '2.0.1') and \
-               not check_min_version(package_modules['pandas'], '1.1.6'):
-                return "Incompatible versions of xlrd and pandas"
+        if (
+            'pandas' in package_dependencies[name]
+            and 'xlrd' in package_dependencies[name]
+            and check_min_version(package_modules['xlrd'], '2.0.1')
+            and not check_min_version(package_modules['pandas'], '1.1.6')
+        ):
+            return "Incompatible versions of xlrd and pandas"
 
     return False
 
@@ -224,27 +213,29 @@ def filter(line):
                    '    ^'):
         if line.startswith(field):
             return True
-    for field in ( 'Total CPU',
-                   'Ipopt',
-                   'license',
-                   'Status: optimal',
-                   'Status: feasible',
-                   'time:',
-                   'Time:',
-                   'with format cpxlp',
-                   'usermodel = <module',
-                   'execution time=',
-                   'Solver results file:',
-                   'TokenServer',
-                   'function calls',
-                   'List reduced',
-                   '.py:',
-                   '{built-in method',
-                   '{method',
-                   '{pyomo.core.expr.numvalue.as_numeric}'):
-        if field in line:
-            return True
-    return False
+    return any(
+        field in line
+        for field in (
+            'Total CPU',
+            'Ipopt',
+            'license',
+            'Status: optimal',
+            'Status: feasible',
+            'time:',
+            'Time:',
+            'with format cpxlp',
+            'usermodel = <module',
+            'execution time=',
+            'Solver results file:',
+            'TokenServer',
+            'function calls',
+            'List reduced',
+            '.py:',
+            '{built-in method',
+            '{method',
+            '{pyomo.core.expr.numvalue.as_numeric}',
+        )
+    )
 
 
 def filter_file_contents(lines):
@@ -310,19 +301,20 @@ for testdir in glob.glob(os.path.join(currdir,'*')):
         bname = os.path.basename(test_file)
         dir_ = os.path.dirname(test_file)
         name=os.path.splitext(bname)[0]
-        tname = os.path.basename(dir_)+'_'+name
+        tname = f'{os.path.basename(dir_)}_{name}'
 
         # If there is both a .py and a .sh, defer to the sh
-        if os.path.exists(os.path.join(dir_, name + '.sh')):
+        if os.path.exists(os.path.join(dir_, f'{name}.sh')):
             continue
 
-        suffix = None
-        # Look for txt and yml file names matching py file names. Add
-        # a test for any found
-        for suffix_ in ['.txt', '.yml']:
-            if os.path.exists(os.path.join(dir_, name+suffix_)):
-                suffix = suffix_
-                break
+        suffix = next(
+            (
+                suffix_
+                for suffix_ in ['.txt', '.yml']
+                if os.path.exists(os.path.join(dir_, name + suffix_))
+            ),
+            None,
+        )
         if suffix is not None:
             tname = tname.replace('-','_')
             tname = tname.replace('.','_')
@@ -339,15 +331,16 @@ for testdir in glob.glob(os.path.join(currdir,'*')):
         bname = os.path.basename(file)
         dir_ = os.path.dirname(os.path.abspath(file))+os.sep
         name='.'.join(bname.split('.')[:-1])
-        tname = os.path.basename(os.path.dirname(dir_))+'_'+name
-        suffix = None
-        # Look for txt and yml file names matching sh file names. Add
-        # a test for any found
-        for suffix_ in ['.txt', '.yml']:
-            if os.path.exists(dir_+name+suffix_):
-                suffix = suffix_
-                break
-        if not suffix is None:
+        tname = f'{os.path.basename(os.path.dirname(dir_))}_{name}'
+        suffix = next(
+            (
+                suffix_
+                for suffix_ in ['.txt', '.yml']
+                if os.path.exists(dir_ + name + suffix_)
+            ),
+            None,
+        )
+        if suffix is not None:
             tname = tname.replace('-','_')
             tname = tname.replace('.','_')
 
@@ -357,7 +350,7 @@ for testdir in glob.glob(os.path.join(currdir,'*')):
 
 def custom_name_func(test_func, test_num, test_params):
     func_name = test_func.__name__
-    return "test_%s_%s" %(test_params.args[0], func_name[-2:])
+    return f"test_{test_params.args[0]}_{func_name[-2:]}"
 
 
 def compare_files(out_file, base_file, abstol, reltol,
@@ -417,7 +410,7 @@ def compare_files(out_file, base_file, abstol, reltol,
             extra_terms = extra[i:n]
             try:
                 assert len(extra_terms) % 3 == 0
-                assert all(str(_)[-1] == ":" for _ in extra_terms[0::3])
+                assert all(str(_)[-1] == ":" for _ in extra_terms[::3])
                 assert all(str(_) == "Value:" for _ in extra_terms[1::3])
                 assert all(abs(_) < abstol for _ in extra_terms[2::3])
             except:
@@ -466,14 +459,13 @@ class TestBookExamples(unittest.TestCase):
         bname = os.path.basename(test_file)
         dir_ = os.path.dirname(test_file)
 
-        skip_msg = check_skip('test_'+tname)
-        if skip_msg:
+        if skip_msg := check_skip(f'test_{tname}'):
             raise unittest.SkipTest(skip_msg)
 
         cwd = os.getcwd()
         try:
             os.chdir(dir_)
-            out_file = os.path.splitext(test_file)[0]+'.out'
+            out_file = f'{os.path.splitext(test_file)[0]}.out'
             # This is roughly equivalent to:
             #    subprocess.run([sys.executable, bname],
             #                   stdout=f, stderr=f, cwd=dir_)
@@ -497,8 +489,7 @@ class TestBookExamples(unittest.TestCase):
         bname = os.path.basename(test_file)
         dir_ = os.path.dirname(test_file)
 
-        skip_msg = check_skip('test_'+tname)
-        if skip_msg:
+        if skip_msg := check_skip(f'test_{tname}'):
             raise unittest.SkipTest(skip_msg)
 
         # Skip all shell tests on Windows.
@@ -507,7 +498,7 @@ class TestBookExamples(unittest.TestCase):
 
         cwd = os.getcwd()
         os.chdir(dir_)
-        out_file = os.path.splitext(test_file)[0]+'.out'
+        out_file = f'{os.path.splitext(test_file)[0]}.out'
         with open(out_file, 'w') as f:
             _env = os.environ.copy()
             _env['PATH'] = os.pathsep.join([os.path.dirname(sys.executable), _env['PATH']])

@@ -27,17 +27,17 @@ import pyomo.environ
 from pyomo.core import *
 from pyomo.opt import SolverFactory
 
-### Create the ipopt solver plugin using the ASL interface
-solver = 'ipopt'
 solver_io = 'nl'
 stream_solver = False    # True prints solver output to screen
 keepfiles =     False    # True prints intermediate file names (.nl,.sol,...) 
+solver = 'ipopt'
 opt = SolverFactory(solver,solver_io=solver_io)
 
 if opt is None:
     print("")
-    print("ERROR: Unable to create solver plugin for %s "\
-          "using the %s interface" % (solver, solver_io))
+    print(
+        f"ERROR: Unable to create solver plugin for {solver} using the {solver_io} interface"
+    )
     print("")
     exit(1)
 ###
@@ -77,8 +77,8 @@ for v in [model.x1,model.x2,model.x3,model.x4]:
                                 value(v),
                                 model.ipopt_zL_out[v],
                                 model.ipopt_zU_out[v]))
-print("inequality.dual = "+str(model.dual[model.inequality]))
-print("equality.dual   = "+str(model.dual[model.equality]))
+print(f"inequality.dual = {str(model.dual[model.inequality])}")
+print(f"equality.dual   = {str(model.dual[model.equality])}")
 ###
 
 
@@ -96,7 +96,7 @@ opt.options['mu_init'] = 1e-6
 ###
 
 ### Send the model and suffix data to ipopt and collect the solution
-print("") 
+print("")
 print("WARM-STARTED SOLVE")
 # The solver plugin will scan the model for all active suffixes
 # valid for importing, which it will store into the results object
@@ -110,6 +110,6 @@ for v in [model.x1,model.x2,model.x3,model.x4]:
                                 value(v),
                                 model.ipopt_zL_out[v],
                                 model.ipopt_zU_out[v]))
-print("inequality.dual = "+str(model.dual[model.inequality]))
-print("equality.dual   = "+str(model.dual[model.equality]))
+print(f"inequality.dual = {str(model.dual[model.inequality])}")
+print(f"equality.dual   = {str(model.dual[model.equality])}")
 ###

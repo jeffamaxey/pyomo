@@ -25,18 +25,16 @@
 from pyomo.environ import *
 
 
-#
-# Create the gurobi_ampl solver plugin using the ASL interface
-#
-solver = 'gurobi_ampl'
 solver_io = 'nl'
 stream_solver = True      # True prints solver output to screen
 keepfiles =     False     # True prints intermediate file names (.nl,.sol,...)
+solver = 'gurobi_ampl'
 opt = SolverFactory(solver,solver_io=solver_io)
 if opt is None:
     print("")
-    print("ERROR: Unable to create solver plugin for %s "\
-          "using the %s interface" % (solver, solver_io))
+    print(
+        f"ERROR: Unable to create solver plugin for {solver} using the {solver_io} interface"
+    )
     print("")
     exit(1)
 
@@ -101,13 +99,10 @@ results = opt.solve(model,
 print("")
 print("Suffixes After First Solve:")
 for i in model.s:
-    print("%s.sstatus: %s" % (model.x[i].name,
-                              model.sstatus.get(model.x[i])))
+    print(f"{model.x[i].name}.sstatus: {model.sstatus.get(model.x[i])}")
 for i in model.s:
-    print("%s.sstatus: %s" % (model.con[i].name,
-                              model.sstatus.get(model.con[i])))
-    print("%s.dual: %s" % (model.con[i].name,
-                           model.dual.get(model.con[i])))
+    print(f"{model.con[i].name}.sstatus: {model.sstatus.get(model.con[i])}")
+    print(f"{model.con[i].name}.dual: {model.dual.get(model.con[i])}")
 print("")
 
 #

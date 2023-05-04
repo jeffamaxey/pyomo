@@ -76,10 +76,7 @@ def _load_dll(name, timeout=10):
         # create a new Pool)
         _load_dll.pool.terminate()
         _load_dll.pool = None
-    if result:
-        return result, ctypes.CDLL(name)
-    else:
-        return result, None
+    return (result, ctypes.CDLL(name)) if result else (result, None)
 
 # For efficiency, cache the multiprocessing Pool between calls to _load_dll
 _load_dll.pool = None
@@ -109,18 +106,14 @@ class _RestorableEnvironInterface(object):
 
     def restore(self):
         for key, val in self._original_state.items():
-            if not val:
-                if self[key] is not None:
-                    del self[key]
-            else:
+            if val:
                 self[key] = val
+            elif self[key] is not None:
+                del self[key]
         self._original_state = {}
 
     def __getitem__(self, key):
-        if isinstance(key, str):
-            return self.dll.wgetenv(key)
-        else:
-            return self.dll.getenv(key)
+        return self.dll.wgetenv(key) if isinstance(key, str) else self.dll.getenv(key)
 
     def __setitem__(self, key, val):
         if key not in self._original_state:
@@ -196,10 +189,7 @@ class _MsvcrtDLL(object):
 
     def __init__(self, name):
         self._libname = name
-        if name is None:
-            self._loaded = False
-        else:
-            self._loaded = None
+        self._loaded = False if name is None else None
         self.dll = None
 
     def available(self):
@@ -272,10 +262,7 @@ class _Win32DLL(object):
 
     def __init__(self, name):
         self._libname = name
-        if name is None:
-            self._loaded = False
-        else:
-            self._loaded = None
+        self._loaded = False if name is None else None
         self.dll = None
 
     def available(self):

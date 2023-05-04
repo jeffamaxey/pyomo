@@ -8,10 +8,7 @@ model.C = pyo.Set(initialize=[(1,4),(9,16)])
 # @:decl2
 
 # @decl6:
-F_init = {}
-F_init[2] = [1,3,5]
-F_init[3] = [2,4,6]
-F_init[4] = [3,5,7]
+F_init = {2: [1, 3, 5], 3: [2, 4, 6], 4: [3, 5, 7]}
 model.F = pyo.Set([2,3,4],initialize=F_init)
 # @:decl6
 

@@ -60,7 +60,7 @@ class _robust_sort_keyfcn(object):
             # it is, sort it as if it were a float.
             try:
                 # Extra check that the comparison returns a meaningful result
-                if bool(val < 1.) != bool(1. < val or 1. == val):
+                if (val < 1.0) != (val > 1.0 or val == 1.0):
                     _typename = float.__name__
             except:
                 pass

@@ -13,6 +13,7 @@
 Create the PP.sqlite file
 """
 
+
 import sqlite3
 
 conn = sqlite3.connect('PP.sqlite')
@@ -20,7 +21,7 @@ conn = sqlite3.connect('PP.sqlite')
 c = conn.cursor()
 
 for table in ['PPtable']:
-    c.execute('DROP TABLE IF EXISTS ' + table)
+    c.execute(f'DROP TABLE IF EXISTS {table}')
 conn.commit()
 
 c.execute('''

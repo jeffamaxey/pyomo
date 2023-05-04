@@ -37,14 +37,12 @@ model.TIME = ContinuousSet(initialize=_TIME_init, bounds=(0,None))
 
 model.S_TRI = RangeSet(1,model.P_TRI)
 
-# Define indexed parameters
-beta_ndx = {}
-if (beta_py > 26) or (fepr > 1):
-    for i in range(1,fe+1):
-        beta_ndx[i] = (((i+1)/fepr)-1)%beta_py+1
-else:
-    for i in range(1,fe+1):
-        beta_ndx[i] = ((i-1)%beta_py)+1
+beta_ndx = {
+    i: (((i + 1) / fepr) - 1) % beta_py + 1
+    if (beta_py > 26) or (fepr > 1)
+    else ((i - 1) % beta_py) + 1
+    for i in range(1, fe + 1)
+}
 model.P_BETA_NDX = Param(model.S_FE, initialize=beta_ndx, default=1.0)
 
 model.P_POP = Param(default=1.0e6)
@@ -182,16 +180,12 @@ def _init_conditions(model):
 model.init_conditions = ConstraintList(rule=_init_conditions)
 
 def _reported_cases(model,i):
+    if model.P_DATA_WTS[i] <= 0.1:
+        return Constraint.Skip
     if i == 1:
-        if model.P_DATA_WTS[i] > 0.1:
-            return model.P_REP_CASES[i]== model.P_REP_FRAC[i]*( model.phi[model.TIME._fe[i*model.P_FEPR]] - model.phi_init ) + model.eps_phi[i]
-        else:
-            return Constraint.Skip
+        return model.P_REP_CASES[i]== model.P_REP_FRAC[i]*( model.phi[model.TIME._fe[i*model.P_FEPR]] - model.phi_init ) + model.eps_phi[i]
     else:
-        if model.P_DATA_WTS[i] > 0.1:
-            return model.P_REP_CASES[i]== model.P_REP_FRAC[i]*( model.phi[model.TIME._fe[i*model.P_FEPR]] - model.phi[model.TIME._fe[(i-1)*model.P_FEPR]] ) + model.eps_phi[i]
-        else:
-            return Constraint.Skip
+        return model.P_REP_CASES[i]== model.P_REP_FRAC[i]*( model.phi[model.TIME._fe[i*model.P_FEPR]] - model.phi[model.TIME._fe[(i-1)*model.P_FEPR]] ) + model.eps_phi[i]
 model.con_reported_cases = Constraint(model.S_TRI, rule=_reported_cases)
 
 def _beta_bar(model):

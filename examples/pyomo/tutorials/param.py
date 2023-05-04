@@ -67,10 +67,7 @@ model.W = Param(model.A, model.B, initialize=W_init)
 # a parameter.  These default values may be overriden by later construction
 # steps, or by data in an input file:
 #
-V_init={}
-V_init[1]=1
-V_init[2]=2
-V_init[3]=9
+V_init = {1: 1, 2: 2, 3: 9}
 model.V = Param(model.B, initialize=V_init)
 #
 # Note that parameter V is initialized with a dictionary, which maps

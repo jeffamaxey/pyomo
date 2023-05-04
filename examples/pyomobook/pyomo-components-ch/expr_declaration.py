@@ -27,10 +27,7 @@ model = pyo.ConcreteModel()
 N = [1,2,3]
 model.x = pyo.Var(N)
 def e_rule(model, i):
-    if i == 1:
-        return pyo.Expression.Skip
-    else:
-        return model.x[i]**2
+    return pyo.Expression.Skip if i == 1 else model.x[i]**2
 model.e = pyo.Expression(N, rule=e_rule)
 # @:decl3
 

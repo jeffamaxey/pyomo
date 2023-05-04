@@ -32,17 +32,16 @@ class Factory(object):
     def __call__(self, name, **kwds):
         exception = kwds.pop('exception', False)
         name = str(name)
-        if not name in self._cls:
+        if name not in self._cls:
             if not exception:
                 return None
             if self._description is None:
-                raise ValueError("Unknown factory object type: '%s'" % name)
-            raise ValueError("Unknown %s: '%s'" % (self._description, name))
+                raise ValueError(f"Unknown factory object type: '{name}'")
+            raise ValueError(f"Unknown {self._description}: '{name}'")
         return self._cls[name](**kwds)
 
     def __iter__(self):
-        for name in self._cls:
-            yield name
+        yield from self._cls
 
     def __contains__(self, name):
         return str(name) in self._cls

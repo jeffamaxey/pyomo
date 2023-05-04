@@ -41,9 +41,9 @@ v = pmo.variable(domain_type=pmo.IntegerSet,
 #
 
 v = pmo.variable()
-assert v.value == None
-assert v.lb == None
-assert v.ub == None
+assert v.value is None
+assert v.lb is None
+assert v.ub is None
 assert v.fixed == False
 assert v.domain_type == pmo.RealSet
 
@@ -60,8 +60,8 @@ assert v.ub == 20
 
 # set the domain (always overwrites bounds, even if infinite)
 v.domain = pmo.Reals
-assert v.lb == None
-assert v.ub == None
+assert v.lb is None
+assert v.ub is None
 assert v.domain_type == pmo.RealSet
 v.domain = pmo.Binary
 assert v.lb == 0

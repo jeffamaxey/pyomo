@@ -183,7 +183,7 @@ print(data['z'])    #1.1
 
 data.load(filename='Y.tab', param="y", format="table")
 for key in sorted(data['y']):
-    print("%s %s" % (key, data['y'][key]))
+    print(f"{key} {data['y'][key]}")
 # @getitem
 # --------------------------------------------------
 # @excel1
@@ -241,26 +241,6 @@ data.load(filename='PP.sqlite', using='sqlite3',
                    param=model.p, index=model.A, text_factory=str)
 instance = model.create_instance(data)
 instance.pprint()
-# --------------------------------------------------
-# @db3
-if False:
-    model = AbstractModel()
-    data = DataPortal()
-    model.A = Set()
-    model.p = Param(model.A)
-    data.load(filename="Driver={MySQL ODBC 5.2 UNICODE Driver}; Database=Pyomo; Server=localhost; User=pyomo;",
-            using='pypyodbc',
-            query="SELECT A,PP FROM PPtable",
-            param=model.p, index=model.A)
-    instance = model.create_instance(data)
-    # @db3
-    data = DataPortal()
-    data.load(filename="Driver={MySQL ODBC 5.2 UNICODE Driver}; Database=Pyomo; Server=localhost; User=pyomo;",
-            using='pypyodbc',
-            query="SELECT A,PP FROM PPtable",
-            param=model.p, index=model.A, text_factory=str)
-    instance = model.create_instance(data)
-    instance.pprint()
 # --------------------------------------------------
 # @json1
 model = AbstractModel()

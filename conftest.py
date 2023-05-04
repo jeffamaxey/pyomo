@@ -37,7 +37,7 @@ def pytest_runtest_setup(item):
     markeroption = item.config.getoption("-m")
     implicit_markers = ['default']
     extended_implicit_markers = implicit_markers + ['solver']
-    item_markers = set(mark.name for mark in marker)
+    item_markers = {mark.name for mark in marker}
     if solveroption:
         if solveroption not in solvernames:
             pytest.skip("SKIPPED: Test not marked {!r}".format(solveroption))

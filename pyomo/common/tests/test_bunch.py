@@ -32,12 +32,11 @@ class Test(unittest.TestCase):
         self.assertEqual(opt['bar'], 'x')
         opt.xx = 1
         opt['yy'] = 2
-        self.assertEqual(
-            set(opt.keys()), set(['a', 'bar', 'c', 'foo', 'e', 'xx', 'yy']))
+        self.assertEqual(set(opt.keys()), {'a', 'bar', 'c', 'foo', 'e', 'xx', 'yy'})
         opt.x = Bunch(a=1, b=2)
         self.assertEqual(
-            set(opt.keys()), set(
-                ['a', 'bar', 'c', 'foo', 'e', 'xx', 'yy', 'x']))
+            set(opt.keys()), {'a', 'bar', 'c', 'foo', 'e', 'xx', 'yy', 'x'}
+        )
         self.assertEqual(
             repr(opt),
             "Bunch(a = None, bar = 'x', c = 'd', e = '1 2 3', foo = 1, x = Bunch(a = 1, b = 2), xx = 1, yy = 2)")
@@ -54,8 +53,8 @@ xx: 1
 yy: 2""")
         opt._name_ = 'BUNCH'
         self.assertEqual(
-            set(opt.keys()), set(
-                ['a', 'bar', 'c', 'foo', 'e', 'xx', 'yy', 'x']))
+            set(opt.keys()), {'a', 'bar', 'c', 'foo', 'e', 'xx', 'yy', 'x'}
+        )
         self.assertEqual(
             repr(opt),
             "Bunch(a = None, bar = 'x', c = 'd', e = '1 2 3', foo = 1, x = Bunch(a = 1, b = 2), xx = 1, yy = 2)")

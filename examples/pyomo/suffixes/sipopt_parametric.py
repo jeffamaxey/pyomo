@@ -56,7 +56,7 @@ model.eta1 = Var()
 model.eta2 = Var()
 # constraints + objective
 model.const1 = Constraint(expr=6*model.x1+3*model.x2+2*model.x3 - model.eta1 == 0)
-model.const2 = Constraint(expr=model.eta2*model.x1+model.x2-model.x3-1 == 0)
+model.const2 = Constraint(expr=model.eta2*model.x1+model.x2-model.x3 == 1)
 model.cost   = Objective(expr=model.x1**2 + model.x2**2 + model.x3**2)
 model.consteta1 = Constraint(expr=model.eta1 == nominal_eta1)
 model.consteta2 = Constraint(expr=model.eta2 == nominal_eta2)

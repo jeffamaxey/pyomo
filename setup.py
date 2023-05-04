@@ -47,11 +47,15 @@ def get_version():
     return import_pyomo_module('pyomo','version','info.py')['__version__']
 
 CYTHON_REQUIRED = "required"
-if not any(arg.startswith(cmd)
-           for cmd in ('build','install','bdist') for arg  in sys.argv):
-    using_cython = False
-else:
-    using_cython = "automatic"
+using_cython = (
+    "automatic"
+    if any(
+        arg.startswith(cmd)
+        for cmd in ('build', 'install', 'bdist')
+        for arg in sys.argv
+    )
+    else False
+)
 if '--with-cython' in sys.argv:
     using_cython = CYTHON_REQUIRED
     sys.argv.remove('--with-cython')

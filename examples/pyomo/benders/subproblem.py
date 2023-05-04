@@ -79,7 +79,11 @@ def sell_bounds(model, p, t):
 model.Sell = Var(model.PROD, model.TWOPLUSWEEKS, within=NonNegativeReals, bounds=sell_bounds)
 
 def time_rule(model, t):
-    return sum([(1.0 / model.rate[p]) * model.Make[p, t] for p in model.PROD]) - model.avail[t] <= 0.0
+    return (
+        sum((1.0 / model.rate[p]) * model.Make[p, t] for p in model.PROD)
+        - model.avail[t]
+        <= 0.0
+    )
 model.Time = Constraint(model.TWOPLUSWEEKS, rule=time_rule)
 
 def balance2_rule(model, p):
@@ -93,8 +97,11 @@ model.Balance = Constraint(model.PROD, model.THREEPLUSWEEKS, rule=balance_rule)
 # the manual distribution of model.prob is ugly, but at the moment necessary; Pyomo
 # expression simplification will be significantly improved in the near-term future.
 def exp_stage2_profit_rule(model):
-    return sum([model.prob * model.revenue[p, t] * model.Sell[p, t] - \
-                model.prob * model.prodcost[p] * model.Make[p, t] - \
-                model.prob * model.invcost[p] * model.Inv[p, t] \
-                for p in model.PROD for t in model.TWOPLUSWEEKS])
+    return sum(
+        model.prob * model.revenue[p, t] * model.Sell[p, t]
+        - model.prob * model.prodcost[p] * model.Make[p, t]
+        - model.prob * model.invcost[p] * model.Inv[p, t]
+        for p in model.PROD
+        for t in model.TWOPLUSWEEKS
+    )
 model.Exp_Stage2_Profit = Objective(rule=exp_stage2_profit_rule, sense=maximize)

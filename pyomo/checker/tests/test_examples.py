@@ -75,10 +75,8 @@ class ExampleTest(unittest.TestCase):
         del PyomoModelChecker.problemCount
         del PyomoModelChecker.resetProblemCount
 
-if yaml_available:
-    # Disable test for py3k.  For some reason, this messes up nose
-    if not (sys.version_info[0:2] >= (3,0)):
-        assignTests(ExampleTest)
+if yaml_available and not sys.version_info[:2] >= (3, 0):
+    assignTests(ExampleTest)
 
 
 if __name__ == "__main__":

@@ -50,11 +50,11 @@ class IntervalTightener(PersistentBase):
         super(IntervalTightener, self).__init__()
         self._config = IntervalConfig()
         self._cmodel = None
-        self._var_map = dict()
-        self._con_map = dict()
-        self._param_map = dict()
-        self._rvar_map = dict()
-        self._rcon_map = dict()
+        self._var_map = {}
+        self._con_map = {}
+        self._param_map = {}
+        self._rvar_map = {}
+        self._rcon_map = {}
         self._pyomo_expr_types = cmodel.PyomoExprTypes()
         self._symbolic_solver_labels: bool = False
         self._symbol_map = SymbolMap()
@@ -126,7 +126,7 @@ class IntervalTightener(PersistentBase):
                 cc.name = self._symbol_map.getSymbol(c, self._con_labeler)
 
     def _add_sos_constraints(self, cons: List[_SOSConstraintData]):
-        if len(cons) != 0:
+        if cons:
             raise NotImplementedError('IntervalTightener does not support SOS constraints')
 
     def _remove_constraints(self, cons: List[_GeneralConstraintData]):
@@ -139,7 +139,7 @@ class IntervalTightener(PersistentBase):
             del self._rcon_map[cc]
 
     def _remove_sos_constraints(self, cons: List[_SOSConstraintData]):
-        if len(cons) != 0:
+        if cons:
             raise NotImplementedError('IntervalTightener does not support SOS constraints')
 
     def _remove_variables(self, variables: List[_GeneralVarData]):
@@ -167,9 +167,8 @@ class IntervalTightener(PersistentBase):
             cp.value = p.value
 
     def set_objective(self, obj: _GeneralObjectiveData):
-        if self._symbolic_solver_labels:
-            if self._objective is not None:
-                self._symbol_map.removeSymbol(self._objective)
+        if self._symbolic_solver_labels and self._objective is not None:
+            self._symbol_map.removeSymbol(self._objective)
         super().set_objective(obj)
 
     def _set_objective(self, obj: _GeneralObjectiveData):
@@ -178,10 +177,7 @@ class IntervalTightener(PersistentBase):
             sense = 0
         else:
             ce = cmodel.appsi_expr_from_pyomo_expr(obj.expr, self._var_map, self._param_map, self._pyomo_expr_types)
-            if obj.sense is minimize:
-                sense = 0
-            else:
-                sense = 1
+            sense = 0 if obj.sense is minimize else 1
         cobj = cmodel.FBBTObjective(ce)
         cobj.sense = sense
         self._cmodel.objective = cobj
@@ -205,11 +201,11 @@ class IntervalTightener(PersistentBase):
                 self._vars[v_id] = (_v, _lb, cv_ub, _fixed, _domain, _value)
 
     def _deactivate_satisfied_cons(self):
-        cons_to_deactivate = list()
+        cons_to_deactivate = []
         if self.config.deactivate_satisfied_constraints:
-            for c, cc in self._con_map.items():
-                if not cc.active:
-                    cons_to_deactivate.append(c)
+            cons_to_deactivate.extend(
+                c for c, cc in self._con_map.items() if not cc.active
+            )
         self.remove_constraints(cons_to_deactivate)
         for c in cons_to_deactivate:
             c.deactivate()
@@ -217,11 +213,14 @@ class IntervalTightener(PersistentBase):
     def perform_fbbt(self, model: _BlockData, symbolic_solver_labels: Optional[bool] = None):
         if model is not self._model:
             self.set_instance(model, symbolic_solver_labels=symbolic_solver_labels)
-        else:
-            if symbolic_solver_labels is not None and symbolic_solver_labels != self._symbolic_solver_labels:
-                raise RuntimeError('symbolic_solver_labels can only be changed through the set_instance method. '
-                                   'Please either use set_instance or create a new instance of IntervalTightener.')
+        elif (
+            symbolic_solver_labels is None
+            or symbolic_solver_labels == self._symbolic_solver_labels
+        ):
             self.update()
+        else:
+            raise RuntimeError('symbolic_solver_labels can only be changed through the set_instance method. '
+                               'Please either use set_instance or create a new instance of IntervalTightener.')
         try:
             n_iter = self._cmodel.perform_fbbt(self.config.feasibility_tol, self.config.integer_tol,
                                                self.config.improvement_tol, self.config.max_iter,

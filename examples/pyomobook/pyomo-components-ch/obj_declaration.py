@@ -40,9 +40,7 @@ model.d = pyo.Objective(A, rule=d_rule)
 print('declskip')
 # @declskip:
 def e_rule(model, i):
-    if i == 'R':
-        return pyo.Objective.Skip
-    return model.x[i]**2
+    return pyo.Objective.Skip if i == 'R' else model.x[i]**2
 model.e = pyo.Objective(A, rule=e_rule)
 # @:declskip
 model.display()

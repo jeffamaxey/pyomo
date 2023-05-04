@@ -4,11 +4,10 @@ import pyomo.kernel as pmo
 # List containers
 #
 
-vl = pmo.variable_list(
-    pmo.variable() for i in range(10))
+vl = pmo.variable_list(pmo.variable() for _ in range(10))
 
 cl = pmo.constraint_list()
-for i in range(10):
+for _ in range(10):
     cl.append(pmo.constraint(vl[-1] == 1))
 
 cl.insert(0, pmo.constraint(vl[0]**2 >= 1))

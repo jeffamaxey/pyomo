@@ -80,20 +80,17 @@ def tostr(value, quote_str=False):
     return tostr.handlers[_type](value, quote_str)
 
 tostr.handlers = {
-    list: lambda value, quote_str: (
-        "[%s]" % (', '.join(tostr(v, True) for v in value))
-    ),
+    list: lambda value, quote_str: f"[{', '.join(tostr(v, True) for v in value)}]",
     dict: lambda value, quote_str: (
-        "{%s}" % (', '.join('%s: %s' % (tostr(k, True), tostr(v, True))
-                            for k, v in value.items()))
+        "{%s}"
+        % ', '.join(
+            f'{tostr(k, True)}: {tostr(v, True)}' for k, v in value.items()
+        )
     ),
-    tuple: lambda value, quote_str: (
-        "(%s,)" % (tostr(value[0], True),) if len(value) == 1
-        else "(%s)" % (', '.join(tostr(v, True) for v in value))
-    ),
-    str: lambda value, quote_str: (
-        repr(value) if quote_str else value
-    ),
+    tuple: lambda value, quote_str: f"({tostr(value[0], True)},)"
+    if len(value) == 1
+    else f"({', '.join(tostr(v, True) for v in value)})",
+    str: lambda value, quote_str: (repr(value) if quote_str else value),
     None: lambda value, quote_str: str(value),
 }
 
@@ -176,7 +173,7 @@ def tabular_writer(ostream, prefix, data, header, row_generator):
 
     # right-justify data, except for the last column if there are spaces
     # in the data (probably an expression or vector)
-    _width = ["%"+str(i)+"s" for i in _width]
+    _width = [f"%{str(i)}s" for i in _width]
 
     if any( ' ' in r[-1]
             for x in _rows.values() if x is not None

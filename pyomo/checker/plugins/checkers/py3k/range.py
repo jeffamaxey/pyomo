@@ -19,9 +19,8 @@ class XRange(IterativeTreeChecker):
     pyomo.common.plugin.alias('py3k.xrange', 'Check if the xrange() function is used.')
 
     def check(self, runner, script, info):
-        if isinstance(info, ast.Name):
-            if info.id == 'xrange':
-                self.problem("'xrange' function was removed in Python 3.")
+        if isinstance(info, ast.Name) and info.id == 'xrange':
+            self.problem("'xrange' function was removed in Python 3.")
 
     def checkerDoc(self):
         return """\

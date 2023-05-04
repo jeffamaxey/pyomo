@@ -41,14 +41,13 @@ class Imports(IterativeTreeChecker):
     def check(self, runner, script, info):
         if isinstance(info, ast.Import):
             for name in info.names:
-                if isinstance(name, ast.alias):
-                    if name.name == 'pyomo.core':
-                        self.pyomoImported = True
-                    elif name.name == 'pyomo.environ':
-                        self.pyomoImported = True
-
-        if isinstance(info, ast.ImportFrom):
-            if info.module == 'pyomo.core':
-                self.pyomoImported = True
-            elif info.module == 'pyomo.environ':
-                self.pyomoImported = True
+                if isinstance(name, ast.alias) and name.name in [
+                    'pyomo.core',
+                    'pyomo.environ',
+                ]:
+                    self.pyomoImported = True
+        if isinstance(info, ast.ImportFrom) and info.module in [
+            'pyomo.core',
+            'pyomo.environ',
+        ]:
+            self.pyomoImported = True

@@ -62,15 +62,11 @@ class RunnerTest(unittest.TestCase):
         "Check that a runner handles its script list properly"
 
         runner = ModelCheckRunner()
-        expectedScriptCount = 0
-
-        for text in self.testScripts:
+        for expectedScriptCount, text in enumerate(self.testScripts, start=1):
             self.assertEqual(expectedScriptCount, len(runner.scripts))
 
             script = ModelScript(text = text)
             runner.addScript(script)
-            expectedScriptCount += 1
-
             self.assertEqual(expectedScriptCount, len(runner.scripts))
             self.assertTrue(script in runner.scripts)
 

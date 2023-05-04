@@ -54,21 +54,22 @@ class ModelValue(_ModelRuleChecker, ModelTrackerHook):
 
         if modelName is None and script is None:
             return
-        
+
         if modelName is not None:
             valueCallArgs = []
             generatorExps = []
             for node in ast.walk(compare):
                 if isinstance(node, ast.Attribute):
-                    if isinstance(node.value, ast.Name):
-                        if node.value.id == modelName:
-                            wrapped = self.checkWrapped(node, valueCallArgs, generatorExps)
-                            if not wrapped:
-                                self.problem("Comparison on attribute {0}.{1} not wrapped in value()".format(modelName, node.attr), lineno=compare.lineno)
+                    if (
+                        isinstance(node.value, ast.Name)
+                        and node.value.id == modelName
+                    ):
+                        wrapped = self.checkWrapped(node, valueCallArgs, generatorExps)
+                        if not wrapped:
+                            self.problem("Comparison on attribute {0}.{1} not wrapped in value()".format(modelName, node.attr), lineno=compare.lineno)
                 elif isinstance(node, ast.Call):
-                    if isinstance(node.func, ast.Name):
-                        if node.func.id == 'value':
-                            valueCallArgs.append(node.args)
+                    if isinstance(node.func, ast.Name) and node.func.id == 'value':
+                        valueCallArgs.append(node.args)
                 elif isinstance(node, ast.GeneratorExp):
                     generatorExps.append(node)
 

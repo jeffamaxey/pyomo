@@ -62,8 +62,7 @@ model.Hsub = Set(within=model.A * model.B)
 def I_init(model):
     ans=[]
     for a in model.A:
-        for b in model.B:
-            ans.append( (a,b) )
+        ans.extend((a, b) for b in model.B)
     return ans
 model.I = Set(within=model.A*model.B, initialize=I_init)
 #
@@ -146,10 +145,7 @@ model.P = Set(model.B,model.B,initialize=P_init)
 # a set array.  These default values are defined in a dictionary, which
 # specifies how each array element is initialized:
 #
-R_init={}
-R_init[2] = [1,3,5]
-R_init[3] = [2,4,6]
-R_init[4] = [3,5,7]
+R_init = {2: [1, 3, 5], 3: [2, 4, 6], 4: [3, 5, 7]}
 model.R = Set(model.B,initialize=R_init)
 #
 # Validation of a set array is supported with the _within_ option.  The
@@ -180,10 +176,7 @@ model.T = Set(model.B, validate=M_validate)
 def U_init(model, z):
     if z==6:
         return Set.End
-    if z==1:
-        return 1
-    else:
-        return model.U[z-1]*z
+    return 1 if z==1 else model.U[z-1]*z
 model.U = Set(ordered=True, initialize=U_init)
 #
 # This example can be generalized to array sets.  Note that in this case
@@ -195,9 +188,7 @@ model.U = Set(ordered=True, initialize=U_init)
 def V_init(model, z, i):
     if z==6:
         return Set.End
-    if i==1:
-        return z
-    return model.V[i-1][z]+z-1
+    return z if i==1 else model.V[i-1][z]+z-1
 model.V = Set(RangeSet(1,4), initialize=V_init, ordered=True)
 
 ##

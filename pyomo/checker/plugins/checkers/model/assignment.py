@@ -30,28 +30,35 @@ class ArrayValue(IterativeTreeChecker, ModelTrackerHook):
     def checkVarArray(self, script, node):
         """Check for the creation of a new VarArray; store name if created"""
 
-        if isinstance(node.value, ast.Call):
-            if isinstance(node.value.func, ast.Name):
-                if node.value.func.id == 'Var':
-                    if len(node.value.args) > 0:
-                        for target in node.targets:
-                            if isinstance(target, ast.Attribute):
-                                if isinstance(target.value, ast.Name):
-                                    if target.value.id in script.modelVars:
-                                        if target.value.id not in self.varArrays:
-                                            self.varArrays[target.value.id] = []
-                                        self.varArrays[target.value.id].append(target.attr)
+        if not isinstance(node.value, ast.Call):
+            return
+        if (
+            isinstance(node.value.func, ast.Name)
+            and node.value.func.id == 'Var'
+            and len(node.value.args) > 0
+        ):
+            for target in node.targets:
+                if (
+                    isinstance(target, ast.Attribute)
+                    and isinstance(target.value, ast.Name)
+                    and target.value.id in script.modelVars
+                ):
+                    if target.value.id not in self.varArrays:
+                        self.varArrays[target.value.id] = []
+                    self.varArrays[target.value.id].append(target.attr)
 
     def checkArrayValue(self, script, node):
         for target in node.targets:
-            if isinstance(target, ast.Attribute):
-                if isinstance(target.value, ast.Attribute):
-                    if isinstance(target.value.value, ast.Name):
-                        if target.value.value.id in script.modelVars:
-                            if target.value.value.id in self.varArrays:
-                                if target.value.attr in self.varArrays[target.value.value.id]:
-                                    if target.attr == 'value':
-                                        self.problem("Assigning value to variable array {0}.{1}".format(target.value.value.id, target.value.attr), lineno = node.lineno)
+            if (
+                isinstance(target, ast.Attribute)
+                and isinstance(target.value, ast.Attribute)
+                and isinstance(target.value.value, ast.Name)
+                and target.value.value.id in script.modelVars
+                and target.value.value.id in self.varArrays
+                and target.value.attr in self.varArrays[target.value.value.id]
+                and target.attr == 'value'
+            ):
+                self.problem("Assigning value to variable array {0}.{1}".format(target.value.value.id, target.value.attr), lineno = node.lineno)
 
     def check(self, runner, script, info):
         if isinstance(info, ast.Assign):

@@ -7,8 +7,8 @@ v = pmo.variable(value=2)
 #
 
 o = pmo.objective()
-assert o() == None
-assert o.expr == None
+assert o() is None
+assert o.expr is None
 
 o = pmo.objective(expr= v**2 + 1)
 assert o() == 5

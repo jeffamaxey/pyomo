@@ -42,7 +42,7 @@ W = 5600
 
 def create_base_cutting_stock(demand, W):
 
-    initial_patterns = dict() 
+    initial_patterns = {} 
 
     ## cutting stock base problem
     cs = pyo.ConcreteModel()
@@ -108,9 +108,9 @@ def solve_cutting_stock(demand, W, solver, iterations=30):
 
         # else we'll add the column from ks
         new_pattern_var = cs.pattern.add()
-        np_widths = [] 
+        np_widths = []
         np_constraints = []
-        pattern = dict()
+        pattern = {}
 
         for width, var in ks.widths.items():
             cut_number = int(round(pyo.value(var)))
@@ -143,12 +143,12 @@ if __name__ == '__main__':
 
     cs, patterns = solve_cutting_stock(demand, W, solver)
 
-    print('Sheets Required: '+str(int(pyo.value(cs.obj))))
+    print(f'Sheets Required: {int(pyo.value(cs.obj))}')
     print('Repetition\tPattern')
     for idx, var in cs.pattern.items():
         quantity = int(pyo.value(var))
         if quantity > 0:
             print_str = str(quantity)+'\t\t'
             for width, number in patterns[idx].items():
-                print_str += str(int(number))+':'+str(int(width))+', '
+                print_str += f'{int(number)}:{int(width)}, '
             print(print_str[:-2])

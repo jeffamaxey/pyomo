@@ -35,26 +35,43 @@ def build_model():
     m.max_q_idx = RangeSet(m.T_max)
 
     # Randomly generated parameters
-    m.D = Param(m.T, doc='demand',
-                initialize=dict((t, randint(50, 100)) for t in m.T))
-    m.alpha = Param(m.T, doc='storage cost',
-                    initialize=dict((t, randint(5, 20)) for t in m.T))
-    m.gamma = Param(m.T, doc='base buying cost',
-                    initialize=dict((t, randint(10, 30)) for t in m.T))
-    m.beta_B = Param(m.T, doc='bulk discount',
-                     initialize=dict((t, randint(50, 500)/1000) for t in m.T))
+    m.D = Param(m.T, doc='demand', initialize={t: randint(50, 100) for t in m.T})
+    m.alpha = Param(
+        m.T, doc='storage cost', initialize={t: randint(5, 20) for t in m.T}
+    )
+    m.gamma = Param(
+        m.T,
+        doc='base buying cost',
+        initialize={t: randint(10, 30) for t in m.T},
+    )
+    m.beta_B = Param(
+        m.T,
+        doc='bulk discount',
+        initialize={t: randint(50, 500) / 1000 for t in m.T},
+    )
 
-    m.F_B_lo = Param(m.T, doc='bulk minimum purchase amount',
-                     initialize=dict((t, randint(50, 100)) for t in m.T))
+    m.F_B_lo = Param(
+        m.T,
+        doc='bulk minimum purchase amount',
+        initialize={t: randint(50, 100) for t in m.T},
+    )
 
-    m.beta_L = Param(m.T, m.max_q_idx,
-                     initialize=dict(((t, q), randint(10, 999)/1000)
-                                     for t in m.T for q in m.max_q_idx),
-                     doc='long-term discount')
-    m.F_L_lo = Param(m.T, m.max_q_idx,
-                     initialize=dict(((t, q), randint(50, 100))
-                                     for t in m.T for q in m.max_q_idx),
-                     doc='long-term minimum purchase amount')
+    m.beta_L = Param(
+        m.T,
+        m.max_q_idx,
+        initialize={
+            (t, q): randint(10, 999) / 1000 for t in m.T for q in m.max_q_idx
+        },
+        doc='long-term discount',
+    )
+    m.F_L_lo = Param(
+        m.T,
+        m.max_q_idx,
+        initialize={
+            (t, q): randint(50, 100) for t in m.T for q in m.max_q_idx
+        },
+        doc='long-term minimum purchase amount',
+    )
 
     # Contract choices 'standard', 'bulk' and long term contracts '0','1',...
     time_time_choices = [(t1, str(t2)) for t1, t2 in m.T * m.T if t2 <= m.T_max - t1]
@@ -152,7 +169,7 @@ def pprint_result(model):
         df.spending = [model.c[t].value for t in model.T]
         df.feed = [model.f[t].value for t in model.T]
         df.demand = [model.D[t] for t in model.T]
-        df.index = [t for t in model.T]
+        df.index = list(model.T)
 
         # Set properties based on contract type
         t = 1
@@ -162,15 +179,15 @@ def pprint_result(model):
                 df.loc[t, 'min_purchase'] = 0
                 df.loc[t, 'reduced_cost'] = model.gamma[t]
                 df.loc[t, 'base_cost'] = model.gamma[t]
-                t = t+1
+                t += 1
             elif df.loc[t, 'choice'] == 'B':
                 df.loc[t, 'reduction'] = model.beta_B[t]
                 df.loc[t, 'min_purchase'] = model.F_B_lo[t]
                 df.loc[t, 'reduced_cost'] = (1-model.beta_B[t])*model.gamma[t]
                 df.loc[t, 'base_cost'] = model.gamma[t]
-                t = t+1
+                t += 1
             elif int(df.loc[t, 'choice']) == 0:
-                t = t+1
+                t += 1
             else:
                 q = int(df.loc[t, 'choice'])
                 t_contract = t

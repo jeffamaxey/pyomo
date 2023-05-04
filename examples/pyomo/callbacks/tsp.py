@@ -22,16 +22,15 @@ def pyomo_create_model(options=None, model_options=None):
     # Read from the 'points' file
     #
     filename = 'points' if options.points is None else options.points
-    INPUT = open(filename, 'r')
-    N = int(INPUT.readline())
-    x = []
-    y = []
-    for line in INPUT:
-        line = line.strip()
-        tokens = re.split('[ /t]+', line)
-        x.append(int(tokens[1]))
-        y.append(int(tokens[2]))
-    INPUT.close()
+    with open(filename, 'r') as INPUT:
+        N = int(INPUT.readline())
+        x = []
+        y = []
+        for line in INPUT:
+            line = line.strip()
+            tokens = re.split('[ /t]+', line)
+            x.append(int(tokens[1]))
+            y.append(int(tokens[2]))
     #
     # Data initialized from file
     #
@@ -45,9 +44,11 @@ def pyomo_create_model(options=None, model_options=None):
     # (x,y) location
     def x_rule(model, i):
         return x[i-1]
+
     model.x = Param(model.POINTS)
     def y_rule(model, i):
         return y[i-1]
+
     model.y = Param(model.POINTS)
     #
     # Derived data
@@ -55,12 +56,14 @@ def pyomo_create_model(options=None, model_options=None):
     #
     # All points are connected
     def LINKS_rule(model):
-        return set([(i,j) for i in model.POINTS for j in model.POINTS if i<j])
+        return {(i, j) for i in model.POINTS for j in model.POINTS if i<j}
+
     model.LINKS = Set(dimen=2)
     #
     # Distance between points
     def d_rule(model, i, j):
         return math.sqrt( (model.x[i]-model.x[j])**2 + (model.y[i]-model.y[j])**2 )
+
     model.d = Param(model.LINKS)
     #
     # Variables
@@ -77,6 +80,7 @@ def pyomo_create_model(options=None, model_options=None):
     def Degrees_rule(model, i):
         return sum(model.Z[i,j] for (i_,j) in model.LINKS if i == i_) + \
             sum(model.Z[j,i] for (j,i_) in model.LINKS if i == i_) == 2
+
     model.Degrees = Constraint(model.POINTS)
 
     #

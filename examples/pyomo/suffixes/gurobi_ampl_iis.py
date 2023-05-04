@@ -25,17 +25,17 @@ import pyomo.environ
 from pyomo.core import *
 from pyomo.opt import SolverFactory
 
-### Create the gurobi_ampl solver plugin using the ASL interface
-solver = 'gurobi_ampl'
 solver_io = 'nl'
 stream_solver = False     # True prints solver output to screen
 keepfiles =     False     # True prints intermediate file names (.nl,.sol,...)
+solver = 'gurobi_ampl'
 opt = SolverFactory(solver,solver_io=solver_io)
 
 if opt is None:
     print("")
-    print("ERROR: Unable to create solver plugin for %s "\
-          "using the %s interface" % (solver, solver_io))
+    print(
+        f"ERROR: Unable to create solver plugin for {solver} using the {solver_io} interface"
+    )
     print("")
     exit(1)
 
@@ -66,4 +66,4 @@ results = opt.solve(model,
 print("")
 print("IIS Results")
 for component, value in model.iis.items():
-    print(component.name+" "+str(value))
+    print(f"{component.name} {str(value)}")

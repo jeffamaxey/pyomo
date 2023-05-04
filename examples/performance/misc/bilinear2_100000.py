@@ -9,7 +9,7 @@ def create_model(N):
 
     with nonlinear_expression as expr:
         for i in model.A:
-            if not (i+1) in model.A:
+            if i + 1 not in model.A:
                 continue
             expr += i*(model.x[i]*model.x[i+1]+1)
     model.obj = Objective(expr=expr)

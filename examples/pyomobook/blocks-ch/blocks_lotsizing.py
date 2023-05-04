@@ -32,9 +32,7 @@ model.lsb = pyo.Block(model.T, rule=lotsizing_block_rule)
 
 # link the inventory variables between blocks
 def i_linking_rule(m, t):
-    if t == m.T.first():
-        return m.lsb[t].i0 == i0
-    return m.lsb[t].i0 == m.lsb[t-1].i
+    return m.lsb[t].i0 == i0 if t == m.T.first() else m.lsb[t].i0 == m.lsb[t-1].i
 model.i_linking = pyo.Constraint(model.T, rule=i_linking_rule)
 
 # construct the objective function over all the blocks

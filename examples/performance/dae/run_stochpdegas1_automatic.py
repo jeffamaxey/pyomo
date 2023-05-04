@@ -62,20 +62,3 @@ start = time.time()
 instance.write(sys.argv[1])
 endTime = time.time()-start
 print('%f seconds required to write file %s' % (endTime, sys.argv[1]))
-
-if False:
-    for i in instance.SCEN:
-        print("Scenario %s = %s" % (
-            i, sum(sum(0.5*value(instance.pow[i,j,k])
-                       for j in instance.LINK_A)
-                   for k in instance.TIME.get_finite_elements()) ))
-
-
-    solver=SolverFactory('ipopt')
-    results = solver.solve(instance,tee=True)
-
-    for i in instance.SCEN:
-        print("Scenario %s = %s" % (
-            i, sum(sum(0.5*value(instance.pow[i,j,k])
-                       for j in instance.LINK_A)
-                   for k in instance.TIME.get_finite_elements()) ))

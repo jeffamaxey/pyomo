@@ -44,8 +44,6 @@ def Total_Cost_rule(model):
 model.Total_Cost = Objective(rule=Total_Cost_rule)
 
 def Demand_rule(model, i):
-    expr = 0
-    for j in model.ACT:
-        expr += model.io[i,j] * model.Level[j]
+    expr = sum(model.io[i,j] * model.Level[j] for j in model.ACT)
     return expr > model.demand[i]
 model.Demand = Constraint(model.PROD, rule=Demand_rule)

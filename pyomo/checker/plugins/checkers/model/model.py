@@ -70,11 +70,16 @@ class ModelCreate(IterativeTreeChecker):
         """
 
     def check(self, runner, script, info):
-        if isinstance(info, ast.Assign):
-            if 'model' in self.getTargetStrings(info):
-                if isinstance(info.value, ast.Name):
-                    if info.value.id in ['Model', 'AbstractModel', 'ConcreteModel']:
-                        self.problem("Possible incorrect assignment of " + info.value.id + " class instead of instance", lineno = info.lineno)
+        if (
+            isinstance(info, ast.Assign)
+            and 'model' in self.getTargetStrings(info)
+            and isinstance(info.value, ast.Name)
+            and info.value.id in ['Model', 'AbstractModel', 'ConcreteModel']
+        ):
+            self.problem(
+                f"Possible incorrect assignment of {info.value.id} class instead of instance",
+                lineno=info.lineno,
+            )
 
 
 class DeprecatedModel(IterativeTreeChecker):
@@ -88,8 +93,10 @@ class DeprecatedModel(IterativeTreeChecker):
         """
 
     def check(self, runner, script, info):
-        if isinstance(info, ast.Assign):
-            if isinstance(info.value, ast.Call):
-                if isinstance(info.value.func, ast.Name):
-                    if info.value.func.id == 'Model':
-                        self.problem("Deprecated use of Model class", lineno = info.value.func.lineno)
+        if (
+            isinstance(info, ast.Assign)
+            and isinstance(info.value, ast.Call)
+            and isinstance(info.value.func, ast.Name)
+            and info.value.func.id == 'Model'
+        ):
+            self.problem("Deprecated use of Model class", lineno = info.value.func.lineno)

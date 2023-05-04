@@ -55,7 +55,7 @@ class MySolver(object):
         for j in sequence(n):
             instance.y[j].value=0
         # Greedily fix the next best facility
-        for i in sequence(p):
+        for _ in sequence(p):
             best = None
             ndx=j
             for j in sequence(n):

@@ -179,7 +179,7 @@ def collocation_idx(n_fe, n_cp):
         yield i,1
         yield i,2
 
-times = np.array([i for i in collocation_points(nfe, ncp, h)])
+times = np.array(list(collocation_points(nfe, ncp, h)))
 cnominal = np.zeros((nfe*ncp,1))
 cperturbed = np.zeros((nfe*ncp,1))
 tnominal = np.zeros((nfe*ncp,1))

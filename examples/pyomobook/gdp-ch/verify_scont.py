@@ -10,7 +10,7 @@ def verify(obj, x, iv):
     fname = os.path.basename(__file__)
     if fname.endswith('.pyc'):
         fname = fname[:-1]
-    print("%s: OK: result validated" % (fname,))
+    print(f"{fname}: OK: result validated")
 
 def verify_file(fname):
     import yaml
@@ -21,11 +21,13 @@ def verify_file(fname):
     x = {}
     iv = {}
     for i in range(3):
-        x[i] = ans['Solution'][1]['Variable'].get('x[%s]'%i, ZERO)['Value']
-        iv[i,0] = ans['Solution'][1]['Variable'].get(
-            'd_0[%s].binary_indicator_var'%i, ZERO)['Value']
-        iv[i,1] = ans['Solution'][1]['Variable'].get(
-            'd_nonzero[%s].binary_indicator_var'%i, ZERO)['Value']
+        x[i] = ans['Solution'][1]['Variable'].get(f'x[{i}]', ZERO)['Value']
+        iv[i, 0] = ans['Solution'][1]['Variable'].get(
+            f'd_0[{i}].binary_indicator_var', ZERO
+        )['Value']
+        iv[i, 1] = ans['Solution'][1]['Variable'].get(
+            f'd_nonzero[{i}].binary_indicator_var', ZERO
+        )['Value']
     verify(obj, x, iv)
 
 def verify_model(model):

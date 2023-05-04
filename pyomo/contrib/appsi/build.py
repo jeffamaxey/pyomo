@@ -66,6 +66,8 @@ def build_appsi(args=[]):
     from pyomo.common.envvar import PYOMO_CONFIG_DIR
     from pyomo.common.fileutils import this_file_dir
 
+
+
     class appsi_build_ext(build_ext):
         def run(self):
             basedir = os.path.abspath(os.path.curdir)
@@ -73,7 +75,7 @@ def build_appsi(args=[]):
                 tmpdir = os.path.join(this_file_dir(), 'cmodel')
             else:
                 tmpdir = os.path.abspath(tempfile.mkdtemp())
-            print("Building in '%s'" % tmpdir)
+            print(f"Building in '{tmpdir}'")
             os.chdir(tmpdir)
             try:
                 super(appsi_build_ext, self).run()
@@ -90,6 +92,7 @@ def build_appsi(args=[]):
                 os.chdir(basedir)
                 if not self.inplace:
                     shutil.rmtree(tmpdir, onerror=handleReadonly)
+
 
     try:
         original_pybind11_setup_helpers_macos = pybind11.setup_helpers.MACOS

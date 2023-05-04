@@ -135,12 +135,19 @@ def build_eight_process_flowsheet():
         expr=m.use_unit3.indicator_var - m.use_unit8.indicator_var <= 0)
 
     """Profit (objective) function definition"""
-    m.profit = Objective(expr=sum(
-        getattr(m, 'use_unit%s' % (unit,)).indicator_var * CF[unit]
-        for unit in m.units) +
-        sum(m.flow[stream] * CV[stream]
-            for stream in m.streams) + CONSTANT,
-        sense=minimize)
+    m.profit = Objective(
+        expr=(
+            (
+                sum(
+                    getattr(m, f'use_unit{unit}').indicator_var * CF[unit]
+                    for unit in m.units
+                )
+                + sum(m.flow[stream] * CV[stream] for stream in m.streams)
+            )
+            + CONSTANT
+        ),
+        sense=minimize,
+    )
 
     """Bound definitions"""
     # x (flow) upper bounds

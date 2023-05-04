@@ -38,8 +38,8 @@ class ComponentSet(collections_MutableSet):
     """
     __slots__ = ("_data",)
     def __init__(self, *args):
-        self._data = dict()
-        if len(args) > 0:
+        self._data = {}
+        if args:
             if len(args) > 1:
                 raise TypeError(
                     "%s expected at most 1 arguments, "
@@ -49,10 +49,8 @@ class ComponentSet(collections_MutableSet):
 
     def __str__(self):
         """String representation of the mapping."""
-        tmp = []
-        for objid, obj in self._data.items():
-            tmp.append(str(obj)+" (id="+str(objid)+")")
-        return "ComponentSet("+str(tmp)+")"
+        tmp = [f"{str(obj)} (id={str(objid)})" for objid, obj in self._data.items()]
+        return f"ComponentSet({tmp})"
 
     def update(self, args):
         """Update a set with the union of itself and others."""
@@ -103,12 +101,12 @@ class ComponentSet(collections_MutableSet):
     # plain dictionary mapping key->(type(val), id(val)) and
     # compare that instead.
     def __eq__(self, other):
-        if not isinstance(other, collections_Set):
-            return False
-        return set((type(val), id(val))
-                   for val in self) == \
-               set((type(val), id(val))
-                   for val in other)
+        return (
+            {(type(val), id(val)) for val in self}
+            == {(type(val), id(val)) for val in other}
+            if isinstance(other, collections_Set)
+            else False
+        )
 
     def __ne__(self, other):
         return not (self == other)
@@ -127,5 +125,4 @@ class ComponentSet(collections_MutableSet):
         try:
             del self._data[id(val)]
         except KeyError:
-            raise KeyError("Component with id '%s': %s"
-                           % (id(val), str(val)))
+            raise KeyError(f"Component with id '{id(val)}': {str(val)}")

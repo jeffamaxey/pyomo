@@ -316,9 +316,7 @@ class TempfileContext:
         dir = self._resolve_tempdir()
         if dir is None:
             return tempfile.gettempdir()
-        if isinstance(dir, bytes):
-            return dir.decode()
-        return dir
+        return dir.decode() if isinstance(dir, bytes) else dir
 
     def gettempdirb(self):
         """Same as :meth:`gettempdir()`, but the return value is ``bytes``
@@ -327,9 +325,7 @@ class TempfileContext:
         dir = self._resolve_tempdir()
         if dir is None:
             return tempfile.gettempdirb()
-        if not isinstance(dir, bytes):
-            return dir.encode()
-        return dir
+        return dir if isinstance(dir, bytes) else dir.encode()
 
     def gettempprefix(self):
         """Return the filename prefix used to create temporary files.
@@ -396,7 +392,7 @@ class TempfileContext:
         """
         tmp = os.path.abspath(filename)
         if exists and not os.path.exists(tmp):
-            raise IOError("Temporary file does not exist: " + tmp)
+            raise IOError(f"Temporary file does not exist: {tmp}")
         self.tempfiles.append((None, tmp))
 
     def release(self, remove=True):
@@ -455,12 +451,10 @@ class TempfileContext:
                 except WindowsError:
                     if deletion_errors_are_fatal:
                         raise
-                    else:
-                        # Failure to delete a tempfile
-                        # should NOT be fatal
-                        logger = logging.getLogger(__name__)
-                        logger.warning("Unable to delete temporary "
-                                       "file %s" % (name,))
+                    # Failure to delete a tempfile
+                    # should NOT be fatal
+                    logger = logging.getLogger(__name__)
+                    logger.warning(f"Unable to delete temporary file {name}")
             return
         assert os.path.isdir(name)
         shutil.rmtree(

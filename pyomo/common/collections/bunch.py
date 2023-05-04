@@ -39,7 +39,7 @@ class Bunch(dict):
                     kw[item[:r]] = val
         dict.__init__(self, kw)
         self.__dict__.update(kw)
-        if not '_name_' in kw:
+        if '_name_' not in kw:
             self._name_ = self.__class__.__name__
 
     def update(self, d):
@@ -84,13 +84,13 @@ class Bunch(dict):
             return dict.__getitem__(self, name)
         except:
             if name[0] == '_':
-                raise AttributeError("Unknown attribute %s" % name)
+                raise AttributeError(f"Unknown attribute {name}")
         return None
 
     def __repr__(self):
         attrs = sorted("%s = %r" % (k, v) for k, v in self.__dict__.items()
                        if not k.startswith("_"))
-        return "%s(%s)" % (self.__class__.__name__, ", ".join(attrs))
+        return f'{self.__class__.__name__}({", ".join(attrs)})'
 
     def __str__(self):
         return self.as_string()
@@ -114,9 +114,9 @@ class Bunch(dict):
                             if isinstance(v_, Bunch):
                                 text.append('\n' + v_.__str__(nesting + 1))
                             else:
-                                text.append(" " + repr(v_))
+                                text.append(f" {repr(v_)}")
                 else:
-                    text.append(' ' + repr(v))
+                    text.append(f' {repr(v)}')
                 attrs.append("".join(text))
         attrs.sort()
         return "\n".join(attrs)

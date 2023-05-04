@@ -88,11 +88,7 @@ class ConstructionTimer(object):
         except AttributeError:
             _type = type(self.obj).__name__
         if self.timer < 0:
-            return "ConstructionTimer object for %s %s; %s elapsed seconds" % (
-                _type,
-                self.name,
-                self.timer + default_timer()
-            )
+            return f"ConstructionTimer object for {_type} {self.name}; {self.timer + default_timer()} elapsed seconds"
         else:
             return self.fmt % ( 2 if self.timer >= 0.005 else 0,
                                 _type,
@@ -111,10 +107,7 @@ class TransformationTimer(object):
 
     def __init__(self, obj, mode=None):
         self.obj = obj
-        if mode is None:
-            self.mode = ''
-        else:
-            self.mode = " (%s)" % (mode,)
+        self.mode = '' if mode is None else f" ({mode})"
         self.timer = -default_timer()
 
     def report(self):
@@ -128,12 +121,8 @@ class TransformationTimer(object):
         return self.obj.__class__.__name__
 
     def __str__(self):
-        if  self.timer < 0:
-            return "TransformationTimer object for %s%s; %s elapsed seconds" % (
-                self.name,
-                self.mode,
-                self.timer + default_timer()
-            )
+        if self.timer < 0:
+            return f"TransformationTimer object for {self.name}{self.mode}; {self.timer + default_timer()} elapsed seconds"
         else:
             return self.fmt % ( 2 if self.timer >= 0.005 else 0,
                                 self.name,
@@ -238,7 +227,7 @@ class TicTocTimer(object):
 
         if msg is _NotSpecified:
             msg = 'File "%s", line %s in %s' % \
-                  traceback.extract_stack(limit=2)[0][:3]
+                      traceback.extract_stack(limit=2)[0][:3]
 
         now = default_timer()
         if self._start_count or self._lastTime is None:
@@ -265,8 +254,8 @@ class TicTocTimer(object):
 
             if ostream is _NotSpecified:
                 ostream = self.ostream
-                if ostream is _NotSpecified and logger is None:
-                    ostream = sys.stdout
+            if ostream is _NotSpecified and logger is None:
+                ostream = sys.stdout
             if ostream is not None:
                 ostream.write(msg)
 
@@ -313,7 +302,7 @@ See :py:meth:`TicTocTimer.toc()`.
 class _HierarchicalHelper(object):
     def __init__(self):
         self.tic_toc = TicTocTimer()
-        self.timers = dict()
+        self.timers = {}
         self.total_time = 0
         self.n_calls = 0
 
@@ -367,7 +356,7 @@ class _HierarchicalHelper(object):
 
     def get_timers(self, res, prefix):
         for name, timer in self.timers.items():
-            _name = prefix + '.' + name
+            _name = f'{prefix}.{name}'
             res.append(_name)
             timer.get_timers(res, _name)
 
@@ -469,8 +458,8 @@ class HierarchicalTimer(object):
 
     """
     def __init__(self):
-        self.stack = list()
-        self.timers = dict()
+        self.stack = []
+        self.timers = {}
 
     def _get_timer(self, identifier, should_exist=False):
         """
@@ -492,15 +481,13 @@ class HierarchicalTimer(object):
 
         """
         parent = self._get_timer_from_stack(self.stack)
-        if identifier in parent.timers:
-            return parent.timers[identifier]
-        else:
+        if identifier not in parent.timers:
             if should_exist:
                 raise RuntimeError(
                     'Could not find timer {0}'.format(
                         '.'.join(self.stack + [identifier])))
             parent.timers[identifier] = _HierarchicalHelper()
-            return parent.timers[identifier]
+        return parent.timers[identifier]
 
     def start(self, identifier):
         """Start incrementing the timer identified with identifier
@@ -533,10 +520,10 @@ class HierarchicalTimer(object):
 
     def _get_identifier_len(self):
         stage_timers = list(self.timers.items())
-        stage_lengths = list()
+        stage_lengths = []
 
-        while len(stage_timers) > 0:
-            new_stage_timers = list()
+        while stage_timers:
+            new_stage_timers = []
             max_len = 0
             for identifier, timer in stage_timers:
                 new_stage_timers.extend(timer.timers.items())
@@ -548,11 +535,11 @@ class HierarchicalTimer(object):
         return stage_lengths
 
     def __str__(self):
-        const_indent = 4
         max_name_length = 200 - 36
         stage_identifier_lengths = self._get_identifier_len()
         name_field_width = sum(stage_identifier_lengths)
         if name_field_width > max_name_length:
+            const_indent = 4
             # switch to a constant indentation of const_indent spaces
             # (to hopefully shorten the line lengths
             name_field_width = max(
@@ -593,8 +580,8 @@ class HierarchicalTimer(object):
         """
         Completely reset the timer.
         """
-        self.stack = list()
-        self.timers = dict()
+        self.stack = []
+        self.timers = {}
 
     def _get_timer_from_stack(self, stack):
         """
@@ -667,11 +654,10 @@ class HierarchicalTimer(object):
         parent = self._get_timer_from_stack(stack[:-1])
         if parent is self:
             return self.get_total_percent_time(identifier)
+        if parent.total_time > 0:
+            return timer.total_time / parent.total_time * 100
         else:
-            if parent.total_time > 0:
-                return timer.total_time / parent.total_time * 100
-            else:
-                return float('nan')
+            return float('nan')
 
     def get_total_percent_time(self, identifier):
         """
@@ -689,13 +675,8 @@ class HierarchicalTimer(object):
         """
         stack = identifier.split('.')
         timer = self._get_timer_from_stack(stack)
-        total_time = 0
-        for _timer in self.timers.values():
-            total_time += _timer.total_time
-        if total_time > 0:
-            return timer.total_time / total_time * 100
-        else:
-            return float('nan')
+        total_time = sum(_timer.total_time for _timer in self.timers.values())
+        return timer.total_time / total_time * 100 if total_time > 0 else float('nan')
 
     def get_timers(self):
         """
@@ -704,7 +685,7 @@ class HierarchicalTimer(object):
         identifiers: list of str
             Returns a list of all timer identifiers
         """
-        res = list()
+        res = []
         for name, timer in self.timers.items():
             res.append(name)
             timer.get_timers(res, name)

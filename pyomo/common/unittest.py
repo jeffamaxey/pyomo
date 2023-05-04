@@ -173,16 +173,13 @@ def _assertStructuredAlmostEqual(first, second,
     if all(isinstance(_, Mapping) for _ in args):
         if exact and len(first) != len(second):
             raise exception(
-                "mappings are different sizes (%s != %s)" % (
-                    len(first),
-                    len(second),
-                ))
+                f"mappings are different sizes ({len(first)} != {len(second)})"
+            )
         for key in first:
             if key not in second:
                 raise exception(
-                    "key (%s) from first not found in second" % (
-                        _unittest.case.safe_repr(key),
-                    ))
+                    f"key ({_unittest.case.safe_repr(key)}) from first not found in second"
+                )
             try:
                 _assertStructuredAlmostEqual(
                     first[key], second[key], abstol, reltol, exact,
@@ -201,10 +198,8 @@ def _assertStructuredAlmostEqual(first, second,
         # Note that Sequence includes strings
         if exact and len(first) != len(second):
             raise exception(
-                "sequences are different sizes (%s != %s)" % (
-                    len(first),
-                    len(second),
-                ))
+                f"sequences are different sizes ({len(first)} != {len(second)})"
+            )
         for i, (f, s) in enumerate(zip(first, second)):
             try:
                 _assertStructuredAlmostEqual(
@@ -239,16 +234,9 @@ def _assertStructuredAlmostEqual(first, second,
         except:
             pass
 
-    msg = "%s !~= %s" % (
-        _unittest.case.safe_repr(first),
-        _unittest.case.safe_repr(second),
-    )
+    msg = f"{_unittest.case.safe_repr(first)} !~= {_unittest.case.safe_repr(second)}"
     if f is not first or s is not second:
-        msg = "%s !~= %s (%s)" % (
-            _unittest.case.safe_repr(f),
-            _unittest.case.safe_repr(s),
-            msg,
-        )
+        msg = f"{_unittest.case.safe_repr(f)} !~= {_unittest.case.safe_repr(s)} ({msg})"
     raise exception(msg)
 
 def _runner(q, qualname):
@@ -347,7 +335,7 @@ def timeout(seconds, require_fork=False, timeout_raises=TimeoutError):
     def timeout_decorator(fcn):
         @functools.wraps(fcn)
         def test_timer(*args, **kwargs):
-            qualname = '%s.%s' % (fcn.__module__, fcn.__qualname__)
+            qualname = f'{fcn.__module__}.{fcn.__qualname__}'
             if qualname in _runner.data:
                 return fcn(*args, **kwargs)
             if require_fork and multiprocessing.get_start_method() != 'fork':
@@ -392,8 +380,7 @@ def timeout(seconds, require_fork=False, timeout_raises=TimeoutError):
                 resultType, result, stdout = q.get(True, seconds)
             except queue.Empty:
                 test_proc.terminate()
-                raise timeout_raises(
-                    "test timed out after %s seconds" % (seconds,)) from None
+                raise timeout_raises(f"test timed out after {seconds} seconds") from None
             finally:
                 _runner.data.pop(q, None)
             sys.stdout.write(stdout)
@@ -409,7 +396,9 @@ def timeout(seconds, require_fork=False, timeout_raises=TimeoutError):
                         args[0].skipTest(msg)
             else:
                 raise result
+
         return test_timer
+
     return timeout_decorator
 
 

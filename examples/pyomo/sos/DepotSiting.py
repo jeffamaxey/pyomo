@@ -38,5 +38,9 @@ model.EnforceSiteSelectedBinary = Constraint(rule=enforce_site_selected_binary_r
 
 # the objective is to minimize the cost to satisfy all customers.
 def minimize_cost_rule(model):
-    return sum([model.SatisfactionCost[c, s] * model.SiteSelected[s] for c in model.Customers for s in model.Sites])
+    return sum(
+        model.SatisfactionCost[c, s] * model.SiteSelected[s]
+        for c in model.Customers
+        for s in model.Sites
+    )
 model.MinimizeCost = Objective(rule=minimize_cost_rule, sense=minimize)

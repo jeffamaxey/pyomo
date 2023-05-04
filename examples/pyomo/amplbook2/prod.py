@@ -29,7 +29,7 @@ model.X = Var(model.P)
 
 # Objective
 def Objective_rule(model):
-    return sum([model.c[j]*model.X[j] for j in model.P])
+    return sum(model.c[j]*model.X[j] for j in model.P)
 model.Total_Profit = Objective(rule=Objective_rule, sense=maximize)
 
 # Time Constraint

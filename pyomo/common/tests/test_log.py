@@ -94,11 +94,9 @@ class TestWrappingFormatter(unittest.TestCase):
         logger.removeHandler(self.handler)
 
     def test_style_options(self):
-        ans = ''
-
         self.handler.setFormatter(WrappingFormatter(style='%'))
         logger.warning("(warn)")
-        ans += "WARNING: (warn)\n"
+        ans = '' + "WARNING: (warn)\n"
         self.assertEqual(self.stream.getvalue(), ans)
 
         self.handler.setFormatter(WrappingFormatter(style='$'))

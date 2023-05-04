@@ -28,31 +28,30 @@ def f(root, file):
     if not file.endswith('.py'):
         return
     prefix = os.path.splitext(file)[0]
-    #print([root, file, prefix])
-    OUTPUT = open(root+'/'+prefix+'.spy','w')
-    INPUT = open(root+'/'+file,'r')
-    flag = False
-    block_name = None
-    for line in INPUT:
-        tmp = line.strip()
-        if tmp.startswith("# @"):
-            if flag is False:
-                block_name = tmp[3:]
-                flag = True
-                OUTPUT_ = open(root+'/'+prefix+'_%s.spy' % block_name,'w')
-            else:
-                if block_name != tmp[3:]:
-                    print("ERROR parsing file '%s': Started block '%s' but ended with '%s'" % (root+'/'+file, block_name, tmp[3:]))
-                    sys.exit(1)
-                flag = False
-                block_name is None
-                OUTPUT_.close()
-            continue
-        elif flag:
-            OUTPUT_.write(line)
-        OUTPUT.write(line)
-    INPUT.close()
-    OUTPUT.close()
+    with open(f'{root}/{prefix}.spy', 'w') as OUTPUT:
+        with open(f'{root}/{file}', 'r') as INPUT:
+            flag = False
+            block_name = None
+            for line in INPUT:
+                tmp = line.strip()
+                if tmp.startswith("# @"):
+                    if flag is False:
+                        block_name = tmp[3:]
+                        flag = True
+                        OUTPUT_ = open(f'{root}/{prefix}' + f'_{block_name}.spy', 'w')
+                    else:
+                        if block_name != tmp[3:]:
+                            print(
+                                f"ERROR parsing file '{root}/{file}': Started block '{block_name}' but ended with '{tmp[3:]}'"
+                            )
+                            sys.exit(1)
+                        flag = False
+                        block_name is None
+                        OUTPUT_.close()
+                    continue
+                elif flag:
+                    OUTPUT_.write(line)
+                OUTPUT.write(line)
 
 
 def generate_spy_files(root_dir):

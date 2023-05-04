@@ -26,11 +26,11 @@ except NameError:
     old_help = None
 
 def help(thing=None):                               #pragma:nocover
-    if not thing is None and hasattr(thing, '__help__'):
+    if thing is not None and hasattr(thing, '__help__'):
         print(thing.__help__)
+    elif old_help is None:
+        raise NameError("Builtin 'help' is not available")
     else:
-        if old_help is None:
-            raise NameError("Builtin 'help' is not available")
         old_help(thing)
 
 try:

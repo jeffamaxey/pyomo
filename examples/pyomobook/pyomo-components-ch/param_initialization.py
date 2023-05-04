@@ -11,17 +11,13 @@ model.X = pyo.Param(model.A, model.A, initialize=X_init)
 
 # @decl3c:
 def XX_init(model, i, j):
-    if i==1 or j==1:
-        return i*j
-    return i*j + model.XX[i-1,j-1]
+    return i*j if i==1 or j==1 else i*j + model.XX[i-1,j-1]
 model.XX = pyo.Param(model.A, model.A, initialize=XX_init)
 # @:decl3c
 
 # @decl4:
 model.B = pyo.Set(initialize=[1,2,3])
-w={}
-w[1] = 10
-w[3] = 30
+w = {1: 10, 3: 30}
 model.W = pyo.Param(model.B, initialize=w)
 # @:decl4
 
@@ -55,6 +51,6 @@ print(2 in model.p)                 # False
 print(2 in model.q)                 # True
 
 # Demonstrating iteration over component keys
-print([key for key in model.p])     # [1, 3]
-print([key for key in model.q])     # [1, 2, 3]
+print(list(model.p))
+print(list(model.q))
 # @:special1

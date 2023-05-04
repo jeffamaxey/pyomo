@@ -2,19 +2,17 @@ import pyomo.environ as pyo
 
 # create a standard python dict for mapping subsquares to
 # the list (row,col) entries
-subsq_to_row_col = dict()
-
-subsq_to_row_col[1] = [(i,j) for i in range(1,4) for j in range(1,4)]
-subsq_to_row_col[2] = [(i,j) for i in range(1,4) for j in range(4,7)]
-subsq_to_row_col[3] = [(i,j) for i in range(1,4) for j in range(7,10)]
-
-subsq_to_row_col[4] = [(i,j) for i in range(4,7) for j in range(1,4)]
-subsq_to_row_col[5] = [(i,j) for i in range(4,7) for j in range(4,7)]
-subsq_to_row_col[6] = [(i,j) for i in range(4,7) for j in range(7,10)]
-
-subsq_to_row_col[7] = [(i,j) for i in range(7,10) for j in range(1,4)]
-subsq_to_row_col[8] = [(i,j) for i in range(7,10) for j in range(4,7)]
-subsq_to_row_col[9] = [(i,j) for i in range(7,10) for j in range(7,10)]
+subsq_to_row_col = {
+    1: [(i, j) for i in range(1, 4) for j in range(1, 4)],
+    2: [(i, j) for i in range(1, 4) for j in range(4, 7)],
+    3: [(i, j) for i in range(1, 4) for j in range(7, 10)],
+    4: [(i, j) for i in range(4, 7) for j in range(1, 4)],
+    5: [(i, j) for i in range(4, 7) for j in range(4, 7)],
+    6: [(i, j) for i in range(4, 7) for j in range(7, 10)],
+    7: [(i, j) for i in range(7, 10) for j in range(1, 4)],
+    8: [(i, j) for i in range(7, 10) for j in range(4, 7)],
+    9: [(i, j) for i in range(7, 10) for j in range(7, 10)],
+}
 
 # creates the sudoku model for a 10x10 board, where the
 # input board is a list of fixed numbers specified in

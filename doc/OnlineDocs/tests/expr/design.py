@@ -27,10 +27,7 @@ M.e += M.w                      # f == 2*v + 3 + w
 M = ConcreteModel()
 M.x = Var(range(5))
 
-s = 0
-for i in range(5):
-    s += M.x[i]
-
+s = sum(M.x[i] for i in range(5))
 with linear_expression() as e:
     for i in range(5):
         e += M.x[i]

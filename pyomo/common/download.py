@@ -42,11 +42,10 @@ class FileDownloader(object):
         self.target = None
         self.insecure = insecure
         self.cacert = cacert
-        if cacert is not None:
-            if not self.cacert or not os.path.isfile(self.cacert):
-                raise RuntimeError(
-                    "cacert='%s' does not refer to a valid file."
-                    % (self.cacert,))
+        if cacert is not None and (
+            not self.cacert or not os.path.isfile(self.cacert)
+        ):
+            raise RuntimeError(f"cacert='{self.cacert}' does not refer to a valid file.")
 
 
     @classmethod
@@ -89,11 +88,7 @@ class FileDownloader(object):
         # RHEL6 did not include /etc/os-release
         with open('/etc/redhat-release', 'rt') as FILE:
             dist = FILE.readline().lower().strip()
-            ver = ''
-            for word in dist.split():
-                if re.match(r'^[0-9\.]+', word):
-                    ver = word
-                    break
+            ver = next((word for word in dist.split() if re.match(r'^[0-9\.]+', word)), '')
         return cls._map_linux_dist(dist), ver
 
     @classmethod
@@ -227,9 +222,7 @@ class FileDownloader(object):
         system, bits = self.get_sysinfo()
         url = urlmap.get(system, None)
         if url is None:
-            raise RuntimeError(
-                "cannot infer the correct url for platform '%s'"
-                % (platform,))
+            raise RuntimeError(f"cannot infer the correct url for platform '{platform}'")
         return url
 
 
@@ -269,11 +262,10 @@ class FileDownloader(object):
             help="Target destination directory or filename"
         )
         parser.parse_args(argv, self)
-        if self.cacert is not None:
-            if not self.cacert or not os.path.isfile(self.cacert):
-                raise RuntimeError(
-                    "--cacert='%s' does not refer to a valid file."
-                    % (self.cacert,))
+        if self.cacert is not None and (
+            not self.cacert or not os.path.isfile(self.cacert)
+        ):
+            raise RuntimeError(f"--cacert='{self.cacert}' does not refer to a valid file.")
 
     def set_destination_filename(self, default):
         if self.target is not None:
@@ -305,7 +297,7 @@ class FileDownloader(object):
             # Revert to pre-2.7.9 syntax
             fetch = request.urlopen(url)
         ans = fetch.read()
-        logger.info("  ...downloaded %s bytes" % (len(ans),))
+        logger.info(f"  ...downloaded {len(ans)} bytes")
         return ans
 
 
@@ -319,7 +311,7 @@ class FileDownloader(object):
                 FILE.write(raw_file)
             else:
                 FILE.write(raw_file.decode())
-            logger.info("  ...wrote %s bytes" % (len(raw_file),))
+            logger.info(f"  ...wrote {len(raw_file)} bytes")
 
 
     def get_binary_file(self, url):
@@ -340,7 +332,7 @@ class FileDownloader(object):
             zipped_file = io.BytesIO(self.retrieve_url(url))
             raw_file = zipfile.ZipFile(zipped_file).open(srcname).read()
             FILE.write(raw_file)
-            logger.info("  ...wrote %s bytes" % (len(raw_file),))
+            logger.info(f"  ...wrote {len(raw_file)} bytes")
 
 
     def get_zip_archive(self, url, dirOffset=0):
@@ -349,8 +341,8 @@ class FileDownloader(object):
                                  "with set_destination_filename")
         if os.path.exists(self._fname) and not os.path.isdir(self._fname):
             raise RuntimeError(
-                "Target directory (%s) exists, but is not a directory"
-                % (self._fname,))
+                f"Target directory ({self._fname}) exists, but is not a directory"
+            )
         zip_file = zipfile.ZipFile(io.BytesIO(self.retrieve_url(url)))
         # Simple sanity checks
         for info in zip_file.infolist():
@@ -365,7 +357,7 @@ class FileDownloader(object):
                     logger.warning("Skipping file (%s) in zip archive due to "
                                    "dirOffset" % (f,))
                 continue
-            info.filename = target[-1] + '/' if f[-1] == '/' else target[-1]
+            info.filename = f'{target[-1]}/' if f[-1] == '/' else target[-1]
             zip_file.extract(
                 f, os.path.join(self._fname, *tuple(target[dirOffset:-1])))
 
@@ -377,7 +369,7 @@ class FileDownloader(object):
             gzipped_file = io.BytesIO(self.retrieve_url(url))
             raw_file = gzip.GzipFile(fileobj=gzipped_file).read()
             FILE.write(raw_file)
-            logger.info("  ...wrote %s bytes" % (len(raw_file),))
+            logger.info(f"  ...wrote {len(raw_file)} bytes")
 
 
     def _splitpath(self, path):

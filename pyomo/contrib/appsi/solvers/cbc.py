@@ -56,12 +56,12 @@ class CbcConfig(SolverConfig):
 class Cbc(PersistentSolver):
     def __init__(self, only_child_vars=True):
         self._config = CbcConfig()
-        self._solver_options = dict()
+        self._solver_options = {}
         self._writer = LPWriter(only_child_vars=only_child_vars)
         self._filename = None
-        self._dual_sol = dict()
-        self._primal_sol = dict()
-        self._reduced_costs = dict()
+        self._dual_sol = {}
+        self._primal_sol = {}
+        self._reduced_costs = {}
         self._last_results_object: Optional[Results] = None
 
     def available(self):
@@ -84,22 +84,13 @@ class Cbc(PersistentSolver):
         return version
 
     def lp_filename(self):
-        if self._filename is None:
-            return None
-        else:
-            return self._filename + '.lp'
+        return None if self._filename is None else f'{self._filename}.lp'
 
     def log_filename(self):
-        if self._filename is None:
-            return None
-        else:
-            return self._filename + '.log'
+        return None if self._filename is None else f'{self._filename}.log'
 
     def soln_filename(self):
-        if self._filename is None:
-            return None
-        else:
-            return self._filename + '.soln'
+        return None if self._filename is None else f'{self._filename}.soln'
 
     @property
     def config(self):
@@ -189,11 +180,11 @@ class Cbc(PersistentSolver):
                 self._filename = TempfileManager.create_tempfile()
             else:
                 self._filename = self.config.filename
-            TempfileManager.add_tempfile(self._filename + '.lp', exists=False)
-            TempfileManager.add_tempfile(self._filename + '.soln', exists=False)
-            TempfileManager.add_tempfile(self._filename + '.log', exists=False)
+            TempfileManager.add_tempfile(f'{self._filename}.lp', exists=False)
+            TempfileManager.add_tempfile(f'{self._filename}.soln', exists=False)
+            TempfileManager.add_tempfile(f'{self._filename}.log', exists=False)
             timer.start('write lp file')
-            self._writer.write(model, self._filename+'.lp', timer=timer)
+            self._writer.write(model, f'{self._filename}.lp', timer=timer)
             timer.stop('write lp file')
             res = self._apply_solver(timer)
             self._last_results_object = res
@@ -213,10 +204,8 @@ class Cbc(PersistentSolver):
     def _parse_soln(self):
         results = Results()
 
-        f = open(self._filename + '.soln', 'r')
-        all_lines = list(f.readlines())
-        f.close()
-
+        with open(f'{self._filename}.soln', 'r') as f:
+            all_lines = list(f.readlines())
         termination_line = all_lines[0].lower()
         obj_val = None
         if termination_line.startswith('optimal'):
@@ -249,9 +238,9 @@ class Cbc(PersistentSolver):
                     first_var_line = ndx
         last_var_line = len(all_lines) - 1
 
-        self._dual_sol = dict()
-        self._primal_sol = dict()
-        self._reduced_costs = dict()
+        self._dual_sol = {}
+        self._primal_sol = {}
+        self._reduced_costs = {}
 
         symbol_map = self._writer.symbol_map
 
@@ -293,7 +282,7 @@ class Cbc(PersistentSolver):
                 self._reduced_costs[v_id] = (v, -rc_val)
 
         if results.termination_condition == TerminationCondition.optimal and self.config.load_solution:
-            for v_id, (v, val) in self._primal_sol.items():
+            for v, val in self._primal_sol.values():
                 v.set_value(val, skip_validation=True)
             if self._writer.get_active_objective() is None:
                 results.best_feasible_objective = None
@@ -333,9 +322,9 @@ class Cbc(PersistentSolver):
                         if "'" in tmp_v:
                             _bad = True
                         else:
-                            tmp_v = "'" + tmp_v + "'"
+                            tmp_v = f"'{tmp_v}'"
                     else:
-                        tmp_v = '"' + tmp_v + '"'
+                        tmp_v = f'"{tmp_v}"'
 
                 if _bad:
                     raise ValueError("Unable to properly escape solver option:"
@@ -343,21 +332,21 @@ class Cbc(PersistentSolver):
                 yield tmp_k, tmp_v
 
         cmd = [str(config.executable)]
-        action_options = list()
+        action_options = []
         if config.time_limit is not None:
             cmd.extend(['-sec', str(config.time_limit)])
             cmd.extend(['-timeMode', 'elapsed'])
         for key, val in _check_and_escape_options():
             if val.strip() != '':
-                cmd.extend(['-'+key, val])
+                cmd.extend([f'-{key}', val])
             else:
-                action_options.append('-'+key)
+                action_options.append(f'-{key}')
         cmd.extend(['-printingOptions', 'all'])
-        cmd.extend(['-import', self._filename + '.lp'])
+        cmd.extend(['-import', f'{self._filename}.lp'])
         cmd.extend(action_options)
         cmd.extend(['-stat=1'])
         cmd.extend(['-solve'])
-        cmd.extend(['-solu', self._filename + '.soln'])
+        cmd.extend(['-solu', f'{self._filename}.soln'])
 
         ostreams = [LogStream(level=self.config.log_level, logger=self.config.solver_output_logger)]
         if self.config.stream_solver:
@@ -412,7 +401,7 @@ class Cbc(PersistentSolver):
 
     def get_duals(self, cons_to_load = None):
         if cons_to_load is None:
-            return {k: v for k, v in self._dual_sol.items()}
+            return dict(self._dual_sol.items())
         else:
             return {c: self._dual_sol[c] for c in cons_to_load}
 

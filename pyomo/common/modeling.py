@@ -51,14 +51,14 @@ class FlagType(type):
 
     """
     if 'sphinx' in sys.modules or 'Sphinx' in sys.modules:
-        def __repr__(cls):
-            return cls.__qualname__
+        def __repr__(self):
+            return self.__qualname__
     else:
-        def __repr__(cls):
-            return cls.__module__ + "." + cls.__qualname__
+        def __repr__(self):
+            return f"{self.__module__}.{self.__qualname__}"
 
-    def __str__(cls):
-        return cls.__name__
+    def __str__(self):
+        return self.__name__
 
 
 class NOTSET(object, metaclass=FlagType):

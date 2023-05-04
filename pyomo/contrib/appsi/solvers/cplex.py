@@ -59,7 +59,7 @@ class Cplex(PersistentSolver):
 
     def __init__(self, only_child_vars=True):
         self._config = CplexConfig()
-        self._solver_options = dict()
+        self._solver_options = {}
         self._writer = LPWriter(only_child_vars=only_child_vars)
         self._filename = None
         self._last_results_object: Optional[CplexResults] = None
@@ -114,16 +114,10 @@ class Cplex(PersistentSolver):
         return tuple(int(k) for k in self._cplex.Cplex().get_version().split('.'))
 
     def lp_filename(self):
-        if self._filename is None:
-            return None
-        else:
-            return self._filename + '.lp'
+        return None if self._filename is None else f'{self._filename}.lp'
 
     def log_filename(self):
-        if self._filename is None:
-            return None
-        else:
-            return self._filename + '.log'
+        return None if self._filename is None else f'{self._filename}.log'
 
     @property
     def config(self):
@@ -205,10 +199,10 @@ class Cplex(PersistentSolver):
                 self._filename = TempfileManager.create_tempfile()
             else:
                 self._filename = self.config.filename
-            TempfileManager.add_tempfile(self._filename + '.lp', exists=False)
-            TempfileManager.add_tempfile(self._filename + '.log', exists=False)
+            TempfileManager.add_tempfile(f'{self._filename}.lp', exists=False)
+            TempfileManager.add_tempfile(f'{self._filename}.log', exists=False)
             timer.start('write lp file')
-            self._writer.write(model, self._filename+'.lp', timer=timer)
+            self._writer.write(model, f'{self._filename}.lp', timer=timer)
             timer.stop('write lp file')
             res = self._apply_solver(timer)
             self._last_results_object = res
@@ -228,7 +222,7 @@ class Cplex(PersistentSolver):
 
         timer.start('cplex read lp')
         self._cplex_model = cplex_model = self._cplex.Cplex()
-        cplex_model.read(self._filename + '.lp')
+        cplex_model.read(f'{self._filename}.lp')
         timer.stop('cplex read lp')
 
         log_stream = LogStream(level=self.config.log_level, logger=self.config.solver_output_logger)
@@ -286,35 +280,33 @@ class Cplex(PersistentSolver):
         if self._writer.get_active_objective() is None:
             results.best_feasible_objective = None
             results.best_objective_bound = None
+        elif cpxprob.solution.get_solution_type() == cpxprob.solution.type.none:
+            results.best_feasible_objective = None
+            results.best_objective_bound = (
+                -math.inf
+                if cpxprob.objective.get_sense()
+                == cpxprob.objective.sense.minimize
+                else math.inf
+            )
+        elif (cpxprob.variables.get_num_binary() + cpxprob.variables.get_num_integer()) == 0:
+            results.best_feasible_objective = cpxprob.solution.get_objective_value()
+            results.best_objective_bound = cpxprob.solution.get_objective_value()
         else:
-            if cpxprob.solution.get_solution_type() != cpxprob.solution.type.none:
-                if (cpxprob.variables.get_num_binary() + cpxprob.variables.get_num_integer()) == 0:
-                    results.best_feasible_objective = cpxprob.solution.get_objective_value()
-                    results.best_objective_bound = cpxprob.solution.get_objective_value()
-                else:
-                    results.best_feasible_objective = cpxprob.solution.get_objective_value()
-                    results.best_objective_bound = cpxprob.solution.MIP.get_best_objective()
-            else:
-                results.best_feasible_objective = None
-                if cpxprob.objective.get_sense() == cpxprob.objective.sense.minimize:
-                    results.best_objective_bound = -math.inf
-                else:
-                    results.best_objective_bound = math.inf
-
+            results.best_feasible_objective = cpxprob.solution.get_objective_value()
+            results.best_objective_bound = cpxprob.solution.MIP.get_best_objective()
         if config.load_solution:
             if cpxprob.solution.get_solution_type() == cpxprob.solution.type.none:
                 raise RuntimeError('A feasible solution was not found, so no solution can be loades. '
                                    'Please set opt.config.load_solution=False and check '
                                    'results.termination_condition and '
                                    'results.best_feasible_objective before loading a solution.')
-            else:
-                if results.termination_condition != TerminationCondition.optimal:
-                    logger.warning('Loading a feasible but suboptimal solution. '
-                                   'Please set load_solution=False and check '
-                                   'results.termination_condition before loading a solution.')
-                timer.start('load solution')
-                self.load_vars()
-                timer.stop('load solution')
+            if results.termination_condition != TerminationCondition.optimal:
+                logger.warning('Loading a feasible but suboptimal solution. '
+                               'Please set load_solution=False and check '
+                               'results.termination_condition before loading a solution.')
+            timer.start('load solution')
+            self.load_vars()
+            timer.stop('load solution')
 
         return results
 
@@ -350,19 +342,19 @@ class Cplex(PersistentSolver):
             con_names = self._cplex_model.linear_constraints.get_names()
             dual_values = self._cplex_model.solution.get_dual_values()
         else:
-            con_names = list()
+            con_names = []
             for con in cons_to_load:
                 orig_name = symbol_map.byObject[id(con)]
                 if con.equality:
-                    con_names.append(orig_name + '_eq')
+                    con_names.append(f'{orig_name}_eq')
                 else:
                     if con.lower is not None:
-                        con_names.append(orig_name + '_lb')
+                        con_names.append(f'{orig_name}_lb')
                     if con.upper is not None:
-                        con_names.append(orig_name + '_ub')
+                        con_names.append(f'{orig_name}_ub')
             dual_values = self._cplex_model.solution.get_dual_values(con_names)
 
-        res = dict()
+        res = {}
         for name, val in zip(con_names, dual_values):
             orig_name = name[:-3]
             if orig_name == 'obj_const_con':

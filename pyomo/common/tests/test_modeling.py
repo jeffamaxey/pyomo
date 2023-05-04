@@ -40,7 +40,7 @@ class TestModeling(unittest.TestCase):
         self.assertIn(name[10], '0123456789')
 
         for i in range(10):
-            setattr(m, 'y_%s' % i, 0)
+            setattr(m, f'y_{i}', 0)
 
         name = unique_component_name(m, 'y')
         self.assertEqual(len(name), 4)

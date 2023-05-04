@@ -39,14 +39,10 @@ instance.display()
 # Iterate to eliminate the previously found solution
 # @Assign_integers
 for i in range(5):
-# @Assign_integers
-# @Iteratively_assign_and_test
-    expr = 0
-    for j in instance.x:
-        if pyo.value(instance.x[j]) == 0:
-            expr += instance.x[j]
-        else:
-            expr += (1-instance.x[j])
+    expr = sum(
+        instance.x[j] if pyo.value(instance.x[j]) == 0 else (1 - instance.x[j])
+        for j in instance.x
+    )
 # @Iteratively_assign_and_test
 # @Add_expression_constraint
     instance.c.add( expr >= 1 )

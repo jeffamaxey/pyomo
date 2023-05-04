@@ -43,10 +43,7 @@ PieSlice = Constraint(rule=pi_rule)
 # @f_rule_Function_examples
 # A function that changes with index
 def f(model,j,x):
-   if (j == 2):
-      return x**2 + 1.0
-   else:
-      return x**2 + 5.0
+    return x**2 + 1.0 if (j == 2) else x**2 + 5.0
 
 # A nonlinear function
 f = lambda model,x : exp(x) + value(model.p)

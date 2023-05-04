@@ -45,8 +45,8 @@ class Test(unittest.TestCase):
             subprocess.run([sys.executable, 'script.py'], 
                            stdout=f, stderr=f, cwd=cwd)
         if yaml_available:
-            with open(cwd+'script.log', 'r') as f1:
-                with open(cwd+'script.out', 'r') as f2:
+            with open(f'{cwd}script.log', 'r') as f1:
+                with open(f'{cwd}script.out', 'r') as f2:
                     baseline = yaml.full_load(f1)
                     output = yaml.full_load(f2)
                     self.assertStructuredAlmostEqual(output, baseline,
@@ -54,8 +54,7 @@ class Test(unittest.TestCase):
         else:
             _log = os.path.join(cwd, 'script.log')
             _out = os.path.join(cwd, 'script.out')
-            self.assertTrue(cmp(_log, _out),
-                            msg="Files %s and %s differ" % (_log, _out))
+            self.assertTrue(cmp(_log, _out), msg=f"Files {_log} and {_out} differ")
 
     def test_s1(self):
         self.run_script('s1', True)

@@ -25,10 +25,10 @@ model.y = Var(model.J, domain=NonNegativeReals)
 model.bpts = {}
 # @Function_valid_declaration
 def bpts_build(model, j):
-# @Function_valid_declaration
-    model.bpts[j] = []
-    for i in range(model.PieceCnt+2):
-        model.bpts[j].append(float((i*model.Topx)/model.PieceCnt))
+    model.bpts[j] = [
+        float((i * model.Topx) / model.PieceCnt)
+        for i in range(model.PieceCnt + 2)
+    ]
 # The object model.BuildBpts is not refered to again;
 # the only goal is to trigger the action at build time
 # @BuildAction_example

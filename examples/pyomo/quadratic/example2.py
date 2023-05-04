@@ -27,5 +27,5 @@ def bound_x_rule(model, i):
 model.bound_x = Constraint(model.indices, rule=bound_x_rule)
 
 def objective_rule(model):
-    return sum([model.x[i] * model.x[i] for i in model.indices])
+    return sum(model.x[i] * model.x[i] for i in model.indices)
 model.objective = Objective(rule=objective_rule, sense=minimize)

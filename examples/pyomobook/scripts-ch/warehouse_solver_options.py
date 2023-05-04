@@ -20,9 +20,7 @@ solver.solve(model, tee=True)
 model.y.pprint()
 
 # options can also be passed via the solve command
-myoptions = dict()
-myoptions['noscale'] = None
-myoptions['log'] = 'warehouse.log'
+myoptions = {'noscale': None, 'log': 'warehouse.log'}
 solver.solve(model, options=myoptions, tee=True)
 model.y.pprint()
 # @:script

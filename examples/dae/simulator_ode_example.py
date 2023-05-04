@@ -42,15 +42,9 @@ def create_model():
 
 
 def simulate_model(m):
-    if True:
-        # Simulate the model using casadi
-        sim = Simulator(m, package='casadi')
-        tsim, profiles = sim.simulate(numpoints=100, integrator='cvodes')
-    else:
-        # Simulate the model using scipy
-        sim = Simulator(m, package='scipy')
-        tsim, profiles = sim.simulate(numpoints=100, integrator='vode')
-
+    # Simulate the model using casadi
+    sim = Simulator(m, package='casadi')
+    tsim, profiles = sim.simulate(numpoints=100, integrator='cvodes')
     # Discretize model using Orthogonal Collocation
     discretizer = TransformationFactory('dae.collocation')
     discretizer.apply_to(m, nfe=8, ncp=5)

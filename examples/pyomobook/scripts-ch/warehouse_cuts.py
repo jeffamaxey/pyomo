@@ -18,7 +18,7 @@ with open('warehouse_data.json', 'r') as fd:
 # call function to create model
 model = create_wl_model(data, P=2)
 model.integer_cuts = pyo.ConstraintList()
-objective_values = list()
+objective_values = []
 done = False
 while not done:
     # solve the model
@@ -28,7 +28,7 @@ while not done:
     term_cond = results.solver.termination_condition
     print('')
     print('--- Solver Status: {0} ---'.format(term_cond))
-   
+
     if pyo.check_optimal_termination(results):
         # look at the solution
         print('Optimal Obj. Value = {0}'.format(pyo.value(model.obj)))

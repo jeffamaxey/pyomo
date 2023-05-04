@@ -10,8 +10,8 @@ model.U = Param(model.I,model.A)
 
 instance = model.create_instance('import7.tab.dat')
 
-print('I '+str(sorted(list(instance.I.data()))))
-print('A '+str(sorted(list(instance.A.data()))))
+print(f'I {str(sorted(list(instance.I.data())))}')
+print(f'A {str(sorted(list(instance.A.data())))}')
 print('U')
 for key in sorted(instance.U.keys()):
-    print(name(instance.U,key)+" "+str(value(instance.U[key])))
+    print(f"{name(instance.U, key)} {str(value(instance.U[key]))}")

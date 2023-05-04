@@ -78,8 +78,7 @@ class TestFileUtils(unittest.TestCase):
         # first so that we can generate a more informative error in the
         # case of "gross" failure.
         #
-        self.assertTrue(
-            found.endswith(ref), "%s does not end with %s" % (found, ref))
+        self.assertTrue(found.endswith(ref), f"{found} does not end with {ref}")
         self.assertTrue(samefile(ref, found))
 
     def test_this_file(self):
@@ -122,8 +121,7 @@ class TestFileUtils(unittest.TestCase):
         self.assertNotIn('_', _system())
 
     def test_path(self):
-        orig_path = os.environ.get('PATH', None)
-        if orig_path:
+        if orig_path := os.environ.get('PATH', None):
             self.assertEqual(os.pathsep.join(_path()), os.environ['PATH'])
         os.environ.pop('PATH', None)
         self.assertEqual(os.pathsep.join(_path()), os.defpath)
@@ -445,8 +443,7 @@ class TestFileUtils(unittest.TestCase):
         # Test getting the path to the executable
         self._check_file( Executable(f_in_path).path(),
                           os.path.join(pathdir, f_in_path) )
-        self._check_file( "%s" % Executable(f_in_path),
-                          os.path.join(pathdir, f_in_path) )
+        self._check_file(f"{Executable(f_in_path)}", os.path.join(pathdir, f_in_path))
         self._check_file( Executable(f_in_path).executable,
                           os.path.join(pathdir, f_in_path) )
 
@@ -455,7 +452,7 @@ class TestFileUtils(unittest.TestCase):
         if Executable(f_in_tmp):
             self.fail("Expected casting Executable(f_in_tmp) to bool=False")
         self.assertIsNone( Executable(f_in_tmp).path() )
-        self.assertEqual( "%s" % Executable(f_in_tmp), "" )
+        self.assertEqual(f"{Executable(f_in_tmp)}", "")
         self.assertIsNone( Executable(f_in_tmp).executable )
 
         # If we override the pathlist, then we will not find the CONFIGDIR

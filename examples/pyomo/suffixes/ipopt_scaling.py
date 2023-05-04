@@ -23,17 +23,17 @@ import pyomo.environ
 from pyomo.core import *
 from pyomo.opt import SolverFactory
 
-### Create the ipopt solver plugin using the ASL interface
-solver = 'ipopt'
 solver_io = 'nl'
 stream_solver = False    # True prints solver output to screen
 keepfiles =     False    # True prints intermediate file names (.nl,.sol,...) 
+solver = 'ipopt'
 opt = SolverFactory(solver,solver_io=solver_io)
 
 if opt is None:
     print("")
-    print("ERROR: Unable to create solver plugin for %s "\
-          "using the %s interface" % (solver, solver_io))
+    print(
+        f"ERROR: Unable to create solver plugin for {solver} using the {solver_io} interface"
+    )
     print("")
     exit(1)
 ###

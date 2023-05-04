@@ -56,20 +56,20 @@ model.obj2.activate()
 
 # @Listing_arguments
 def pyomo_preprocess(options=None):
-   if options == None:
-      print ("No command line options were given.")
-   else:
-      print ("Command line arguments were: %s" % options)
+    if options is None:
+        print ("No command line options were given.")
+    else:
+        print(f"Command line arguments were: {options}")
 # @Listing_arguments
 
 
 # @Provide_dictionary_for_arbitrary_keywords
 def pyomo_preprocess(**kwds):
-   options = kwds.get('options',None)
-   if options == None:
-      print ("No command line options were given.")
-   else:
-      print ("Command line arguments were: %s" % options)
+    options = kwds.get('options',None)
+    if options is None:
+        print ("No command line options were given.")
+    else:
+        print(f"Command line arguments were: {options}")
 # @Provide_dictionary_for_arbitrary_keywords
 
 # @Pyomo_preprocess_argument
@@ -96,14 +96,14 @@ instance.sVar = pyo.Var(initialize=1, domain=pyo.Boolean)
 # @Fix_all_integers&values
 for var in instance.component_data_objects(pyo.Var, active=True):
     if var.domain is pyo.IntegerSet or var.domain is pyo.BooleanSet:
-        print ("fixing "+str(v))
+        print(f"fixing {str(v)}")
         var.fixed = True # fix the current value
 # @Fix_all_integers&values
 
 # @Include_definition_in_modelfile
 def pyomo_print_results(options, instance, results):
     for v in instance.component_objects(pyo.Var, active=True):
-        print ("Variable "+str(v))
+        print(f"Variable {str(v)}")
         varobject = getattr(instance, v)
         for index in varobject:
             print ("   ",index, varobject[index].value)
@@ -111,7 +111,7 @@ def pyomo_print_results(options, instance, results):
 
 # @Print_parameter_name&value
 for parmobject in instance.component_objects(pyo.Param, active=True):
-    print ("Parameter "+str(parmobject.name))
+    print(f"Parameter {str(parmobject.name)}")
     for index in parmobject:
         print ("   ",index, parmobject[index].value)
 # @Print_parameter_name&value

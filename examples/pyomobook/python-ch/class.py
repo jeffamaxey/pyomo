@@ -11,7 +11,7 @@ class IntLocker:
         else:
             self.sint = i
     def pprint(self):
-        print("The Int Locker has "+str(self.sint))
+        print(f"The Int Locker has {str(self.sint)}")
  
 a = IntLocker(3)
 a.pprint()       # prints: The Int Locker has 3

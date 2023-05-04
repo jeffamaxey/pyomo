@@ -6,7 +6,7 @@ model = ConcreteModel()
 # Initialize with a list, tuple or set
 # @decl2
 model.A = Set(initialize=[2,3,5])
-model.B = Set(initialize=set([2,3,5]))
+model.B = Set(initialize={2, 3, 5})
 model.C = Set(initialize=(2,3,5))
 # @decl2
 
@@ -31,10 +31,7 @@ model.G = Set(initialize=g)
 
 # Initialize an indexed set with a dictionary
 # @decl6
-H_init = {}
-H_init[2] = [1,3,5]
-H_init[3] = [2,4,6]
-H_init[4] = [3,5,7]
+H_init = {2: [1, 3, 5], 3: [2, 4, 6], 4: [3, 5, 7]}
 model.H = Set([2,3,4],initialize=H_init)
 # @decl6
 

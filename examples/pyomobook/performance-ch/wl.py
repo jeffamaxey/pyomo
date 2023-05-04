@@ -17,7 +17,7 @@ def create_warehouse_model(num_locations=50, num_customers=50):
     N = list(range(num_locations))  # warehouse locations
     M = list(range(num_customers))  # customers
 
-    d = dict() # distances from warehouse locations to customers
+    d = {}
     for n in N:
         for m in M:
             d[n, m] = np.random.randint(low=1, high=100)
@@ -32,18 +32,22 @@ def create_warehouse_model(num_locations=50, num_customers=50):
 
     def obj_rule(mdl):
         return sum(d[n,m]*mdl.x[n,m] for n in N for m in M)
+
     model.obj = pyo.Objective(rule=obj_rule)
 
     def demand_rule(mdl, m):
         return sum(mdl.x[n,m] for n in N) == 1
+
     model.demand = pyo.Constraint(M, rule=demand_rule)
 
     def warehouse_active_rule(mdl, n, m):
         return mdl.x[n,m] <= mdl.y[n]
+
     model.warehouse_active = pyo.Constraint(N, M, rule=warehouse_active_rule)
 
     def num_warehouses_rule(mdl):
         return sum(mdl.y[n] for n in N) <= model.P
+
     model.num_warehouses = pyo.Constraint(rule=num_warehouses_rule)
 
     return model
@@ -54,7 +58,7 @@ def create_warehouse_linear_expr(num_locations=50, num_customers=50):
     N = list(range(num_locations))  # warehouse locations
     M = list(range(num_customers))  # customers
 
-    d = dict() # distances from warehouse locations to customers
+    d = {}
     for n in N:
         for m in M:
             d[n, m] = np.random.randint(low=1, high=100)
@@ -68,19 +72,23 @@ def create_warehouse_linear_expr(num_locations=50, num_customers=50):
 
     def obj_rule(mdl):
         return sum(d[n,m]*mdl.x[n,m] for n in N for m in M)
+
     model.obj = pyo.Objective(rule=obj_rule)
 
     def demand_rule(mdl, m):
         return sum(mdl.x[n,m] for n in N) == 1
+
     model.demand = pyo.Constraint(M, rule=demand_rule)
 
     def warehouse_active_rule(mdl, n, m):
         expr = LinearExpression(constant=0, linear_coefs=[1, -1], linear_vars=[mdl.x[n,m], mdl.y[n]])
         return expr <= 0
+
     model.warehouse_active = pyo.Constraint(N, M, rule=warehouse_active_rule)
 
     def num_warehouses_rule(mdl):
         return sum(mdl.y[n] for n in N) <= model.P
+
     model.num_warehouses = pyo.Constraint(rule=num_warehouses_rule)
 
     return model
@@ -110,7 +118,7 @@ def solve_parametric():
     m = create_warehouse_model(num_locations=50, num_customers=50)
     opt = pyo.SolverFactory('gurobi')
     p_values = list(range(1, 31))
-    obj_values = list()
+    obj_values = []
     for p in p_values:
         m.P.value = p
         res = opt.solve(m)
@@ -124,7 +132,7 @@ def solve_parametric_persistent():
     opt = pyo.SolverFactory('gurobi_persistent')
     opt.set_instance(m)
     p_values = list(range(1, 31))
-    obj_values = list()
+    obj_values = []
     for p in p_values:
         m.P.value = p
         opt.remove_constraint(m.num_warehouses)

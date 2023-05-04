@@ -45,7 +45,7 @@ class TestAMPLExternalFunction(unittest.TestCase):
         m.y.fix()
         # Note: this also tests passing constant expressions to external
         # functions in the NL writer
-        m.c = pyo.Constraint(expr=1.5 == m.sum_it("inv", 3, m.x, 1/(m.y+1)))
+        m.c = pyo.Constraint(expr=m.sum_it("inv", 3, m.x, 1/(m.y+1)) == 1.5)
         m.o = pyo.Objective(expr=m.cbrt(m.x))
         solver = pyo.SolverFactory("ipopt")
         solver.solve(m, tee=True)

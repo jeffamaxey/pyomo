@@ -18,8 +18,7 @@ class Bar(object):
 def __getattr__(name):
     if name.startswith('Foo'):
         return name[3:]
-    raise AttributeError(
-        "module '%s' has no attribute '%s'" % (__name__, name))
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 relocated_module_attribute(
     'Foo', 'pyomo.common.tests.test_deprecated.Bar', 'test')

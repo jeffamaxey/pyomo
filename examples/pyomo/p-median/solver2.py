@@ -54,14 +54,16 @@ class MySolver(object):
         # Generate 100 random solutions, and keep the best
         best = None
         best_sol = []
-        for kk in range(100):
+        for _ in range(100):
             random.shuffle(sol)
             # Compute value
             val=0.0
             for j in sequence(instance.M.value):
-                val += min([instance.d[i,j].value
-                            for i in sequence(instance.N.value)
-                            if sol[i-1] == 1])
+                val += min(
+                    instance.d[i, j].value
+                    for i in sequence(instance.N.value)
+                    if sol[i - 1] == 1
+                )
             if best is None or val < best:
                 best=val
                 best_sol=copy.copy(sol)

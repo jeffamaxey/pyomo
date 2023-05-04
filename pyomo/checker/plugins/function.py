@@ -33,7 +33,6 @@ class FunctionTrackerHook(SingletonPlugin):
             script.functionDefs[info.name] = info
             script.functionArgs.append(info.args)
 
-        # update function def dictionary with assignments
         elif isinstance(info, ast.Assign):
             if isinstance(info.value, ast.Name):
                 if info.value.id in script.functionDefs:
@@ -42,9 +41,11 @@ class FunctionTrackerHook(SingletonPlugin):
                             script.functionDefs[target.id] = script.functionDefs[info.value.id]
             else:
                 for target in info.targets:
-                    if isinstance(target, ast.Name):
-                        if target.id in script.functionDefs:
-                            del script.functionDefs[target.id]
+                    if (
+                        isinstance(target, ast.Name)
+                        and target.id in script.functionDefs
+                    ):
+                        del script.functionDefs[target.id]
 
     def postcheck(self, runner, script, info):
         """Remove function args from the stack"""

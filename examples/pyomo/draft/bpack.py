@@ -29,11 +29,7 @@ model.b = Var(model.I, domain=Boolean)
 # Objective zot
 #
 def costrule(model):
-    ans = 0
-    for i in model.I:
-#               ans += (-1 - .02*i)*model.b[i]
-        ans += (1 + .02*i)*model.b[i]
-    return ans
+    return sum((1 + .02*i)*model.b[i] for i in model.I)
 #model.zot = Objective(rule=costrule)
 model.zot = Objective(rule=costrule, sense=maximize)
 #

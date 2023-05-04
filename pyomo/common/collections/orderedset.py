@@ -23,7 +23,7 @@ class OrderedSet(MutableSet):
 
     def __str__(self):
         """String representation of the mapping."""
-        return "OrderedSet(%s)" % (', '.join(repr(x) for x in self))
+        return f"OrderedSet({', '.join(repr(x) for x in self)})"
 
 
     def update(self, iterable):
@@ -77,8 +77,7 @@ class OrderedSet(MutableSet):
         del self._dict[val]
 
     def intersection(self, other):
-        res = OrderedSet([i for i in self if i in other])
-        return res
+        return OrderedSet([i for i in self if i in other])
 
     def union(self, other):
         res = OrderedSet(self)

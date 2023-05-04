@@ -39,8 +39,9 @@ def get_gsl(downloader):
 
     downloader.set_destination_filename(os.path.join('lib', 'amplgsl.dll'))
 
-    logger.info("Fetching GSL from %s and installing it to %s"
-                % (url, downloader.destination()))
+    logger.info(
+        f"Fetching GSL from {url} and installing it to {downloader.destination()}"
+    )
 
     downloader.get_binary_file_from_zip_archive(url, 'amplgsl.dll')
 
@@ -55,5 +56,5 @@ if __name__ == '__main__':
         main(sys.argv[1:])
     except Exception as e:
         print(e.message or str(e))
-        print("Usage: %s [--insecure] [target]" % os.path.basename(sys.argv[0]))
+        print(f"Usage: {os.path.basename(sys.argv[0])} [--insecure] [target]")
         sys.exit(1)

@@ -92,7 +92,7 @@ M.x = Var()
 M.p = Param(mutable=True)
 
 e = M.p+M.x
-s = set([type(M.p)])
+s = {type(M.p)}
 assert(list(EXPR.identify_components(e, s)) == [M.p])
 # @ex8
 
@@ -108,8 +108,10 @@ e = M.x+M.y
 M.y.value = 1
 M.y.fixed = True
 
-assert(set(id(v) for v in EXPR.identify_variables(e)) == set([id(M.x), id(M.y)]))
-assert(set(id(v) for v in EXPR.identify_variables(e, include_fixed=False)) == set([id(M.x)]))
+assert {id(v) for v in EXPR.identify_variables(e)} == {id(M.x), id(M.y)}
+assert {id(v) for v in EXPR.identify_variables(e, include_fixed=False)} == {
+    id(M.x)
+}
 # @ex9
 
 #---------------------------------------------
@@ -206,8 +208,10 @@ class ScalingVisitor(EXPR.ExpressionReplacementVisitor):
             node_.constant = node.constant
             node_.linear_vars = copy.copy(node.linear_vars)
             node_.linear_coefs = []
-            for i,v in enumerate(node.linear_vars):
-                node_.linear_coefs.append( node.linear_coefs[i]*self.scale[id(v)] )
+            node_.linear_coefs.extend(
+                node.linear_coefs[i] * self.scale[id(v)]
+                for i, v in enumerate(node.linear_vars)
+            )
             return True, node_
 
         return False, None
@@ -233,10 +237,7 @@ M = ConcreteModel()
 M.x = Var(range(5))
 M.p = Param(range(5), mutable=True)
 
-scale={}
-for i in M.x:
-  scale[id(M.x[i])] = M.p[i]
-
+scale = {id(M.x[i]): M.p[i] for i in M.x}
 e = quicksum(M.x[i] for i in M.x)
 f = scale_expression(e,scale)
 

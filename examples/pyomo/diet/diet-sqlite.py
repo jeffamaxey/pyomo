@@ -13,6 +13,7 @@
 Create the diet.sqlite file with all the appropriate data.
 """
 
+
 import sqlite3
 
 conn = sqlite3.connect('diet.sqlite')
@@ -20,7 +21,7 @@ conn = sqlite3.connect('diet.sqlite')
 c = conn.cursor()
 
 for table in ['Amount', 'Nutr', 'Food']:
-    c.execute('DROP TABLE IF EXISTS ' + table)
+    c.execute(f'DROP TABLE IF EXISTS {table}')
 conn.commit()
 
 c.execute('''

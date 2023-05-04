@@ -117,10 +117,10 @@ ipopt_command_line_options = {'acceptable_compl_inf_tol',
 class Ipopt(PersistentSolver):
     def __init__(self, only_child_vars=True):
         self._config = IpoptConfig()
-        self._solver_options = dict()
+        self._solver_options = {}
         self._writer = NLWriter(only_child_vars=only_child_vars)
         self._filename = None
-        self._dual_sol = dict()
+        self._dual_sol = {}
         self._primal_sol = ComponentMap()
         self._reduced_costs = ComponentMap()
         self._last_results_object: Optional[Results] = None
@@ -145,22 +145,13 @@ class Ipopt(PersistentSolver):
         return version
 
     def nl_filename(self):
-        if self._filename is None:
-            return None
-        else:
-            return self._filename + '.nl'
+        return None if self._filename is None else f'{self._filename}.nl'
 
     def sol_filename(self):
-        if self._filename is None:
-            return None
-        else:
-            return self._filename + '.sol'
+        return None if self._filename is None else f'{self._filename}.sol'
 
     def options_filename(self):
-        if self._filename is None:
-            return None
-        else:
-            return self._filename + '.opt'
+        return None if self._filename is None else f'{self._filename}.opt'
 
     @property
     def config(self):
@@ -235,11 +226,10 @@ class Ipopt(PersistentSolver):
         self._writer.update_params()
 
     def _write_options_file(self):
-        f = open(self._filename + '.opt', 'w')
-        for k, val in self.ipopt_options.items():
-            if k not in ipopt_command_line_options:
-                f.write(str(k) + ' ' + str(val) + '\n')
-        f.close()
+        with open(f'{self._filename}.opt', 'w') as f:
+            for k, val in self.ipopt_options.items():
+                if k not in ipopt_command_line_options:
+                    f.write(f'{str(k)} {str(val)}' + '\n')
 
     def solve(self, model, timer: HierarchicalTimer = None):
         StaleFlagManager.mark_all_as_stale()
@@ -257,12 +247,12 @@ class Ipopt(PersistentSolver):
                 self._filename = nl_filename.split('.')[0]
             else:
                 self._filename = self.config.filename
-                TempfileManager.add_tempfile(self._filename + '.nl', exists=False)
-            TempfileManager.add_tempfile(self._filename + '.sol', exists=False)
-            TempfileManager.add_tempfile(self._filename + '.opt', exists=False)
+                TempfileManager.add_tempfile(f'{self._filename}.nl', exists=False)
+            TempfileManager.add_tempfile(f'{self._filename}.sol', exists=False)
+            TempfileManager.add_tempfile(f'{self._filename}.opt', exists=False)
             self._write_options_file()
             timer.start('write nl file')
-            self._writer.write(model, self._filename+'.nl', timer=timer)
+            self._writer.write(model, f'{self._filename}.nl', timer=timer)
             timer.stop('write nl file')
             res = self._apply_solver(timer)
             self._last_results_object = res
@@ -282,10 +272,8 @@ class Ipopt(PersistentSolver):
         solve_cons = self._writer.get_ordered_cons()
         results = Results()
 
-        f = open(self._filename + '.sol', 'r')
-        all_lines = list(f.readlines())
-        f.close()
-
+        with open(f'{self._filename}.sol', 'r') as f:
+            all_lines = list(f.readlines())
         termination_line = all_lines[1]
         if 'Optimal Solution Found' in termination_line:
             results.termination_condition = TerminationCondition.optimal
@@ -317,7 +305,7 @@ class Ipopt(PersistentSolver):
         assert 'ipopt_zL_out' in all_lines[12+n_cons+n_vars+3+n_rc_upper+1]
         lower_rc_lines = all_lines[12+n_cons+n_vars+3+n_rc_upper+2:12+n_cons+n_vars+3+n_rc_upper+2+n_rc_lower]
 
-        self._dual_sol = dict()
+        self._dual_sol = {}
         self._primal_sol = ComponentMap()
         self._reduced_costs = ComponentMap()
 
@@ -392,19 +380,19 @@ class Ipopt(PersistentSolver):
         if self.config.stream_solver:
             ostreams.append(sys.stdout)
 
-        cmd = [str(config.executable),
-               self._filename + '.nl',
-               '-AMPL',
-               'option_file_name=' + self._filename + '.opt']
+        cmd = [
+            str(config.executable),
+            f'{self._filename}.nl',
+            '-AMPL',
+            f'option_file_name={self._filename}.opt',
+        ]
         if 'option_file_name' in self.ipopt_options:
             raise ValueError('Use Ipopt.config.filename to specify the name of the options file. '
                              'Do not use Ipopt.ipopt_options["option_file_name"].')
         ipopt_options = dict(self.ipopt_options)
         if config.time_limit is not None:
             ipopt_options['max_cpu_time'] = config.time_limit
-        for k, v in ipopt_options.items():
-            cmd.append(str(k) + '=' + str(v))
-
+        cmd.extend(f'{str(k)}={str(v)}' for k, v in ipopt_options.items())
         env = os.environ.copy()
         if 'PYOMO_AMPLFUNC' in env:
             env['AMPLFUNC'] = "\n".join(filter(None, (env.get('AMPLFUNC', None), env.get('PYOMO_AMPLFUNC', None))))
@@ -457,7 +445,7 @@ class Ipopt(PersistentSolver):
 
     def get_duals(self, cons_to_load = None):
         if cons_to_load is None:
-            return {k: v for k, v in self._dual_sol.items()}
+            return dict(self._dual_sol.items())
         else:
             return {c: self._dual_sol[c] for c in cons_to_load}
 

@@ -29,10 +29,6 @@ model.INDEX1 = Set(dimen=2, initialize=[(0,1),(8,3)])
 model.X = Var(model.INDEX1, bounds=(-2,2))
 model.Z = Var(model.INDEX1)
 
-# For indexed variables, pw_pts must be a
-# python dictionary with keys the same as the variable index
-PW_PTS = {}
-
 # Increase n to see the solution approach:
 # Z[i]=1.19, X[i]=1.89, obj=7.13
 n = 3
@@ -41,9 +37,10 @@ n = 3
 # must have 2^n + 1 breakpoints.
 num_points = 1 + 2**n
 step = (2.0 - (-2.0))/(num_points-1)
-for idx in model.X.index_set():
-    PW_PTS[idx] = [-2.0 + i*step for i in range(num_points)]   # [-2.0, ..., 2.0]
-
+PW_PTS = {
+    idx: [-2.0 + i * step for i in range(num_points)]
+    for idx in model.X.index_set()
+}
 model.linearized_constraint = Piecewise(model.INDEX1,        # indexing sets
                                         model.Z,model.X,     # range and domain variables
                                         pw_pts=PW_PTS,

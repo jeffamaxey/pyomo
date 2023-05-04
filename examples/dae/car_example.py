@@ -33,9 +33,7 @@ m.dv = DerivativeVar(m.v)
 m.obj = Objective(expr=m.tf)
 
 def _ode1(m,i):
-    if i == 0 :
-        return Constraint.Skip
-    return m.dx[i] == m.tf * m.v[i]
+    return Constraint.Skip if i == 0 else m.dx[i] == m.tf * m.v[i]
 m.ode1 = Constraint(m.tau, rule=_ode1)
 
 def _ode2(m,i):
@@ -45,9 +43,7 @@ def _ode2(m,i):
 m.ode2 = Constraint(m.tau, rule=_ode2)
 
 def _ode3(m,i):
-    if i == 0:
-        return Constraint.Skip
-    return m.dtime[i] == m.tf
+    return Constraint.Skip if i == 0 else m.dtime[i] == m.tf
 m.ode3 = Constraint(m.tau, rule=_ode3)
 
 def _init(m):

@@ -33,15 +33,11 @@ m.x2dot = DerivativeVar(m.x2)
 m.obj = Objective(expr=m.x2[1])
 
 def _x1dot(M,i):
-	if i == 0:
-		return Constraint.Skip
-	return M.x1dot[i] == M.u[i]
+	return Constraint.Skip if i == 0 else M.x1dot[i] == M.u[i]
 m.x1dotcon = Constraint(m.t, rule=_x1dot)
 
 def _x2dot(M,i):
-	if i == 0:
-		return Constraint.Skip
-	return M.x2dot[i] == M.x1[i]**2 + M.u[i]**2
+	return Constraint.Skip if i == 0 else M.x2dot[i] == M.x1[i]**2 + M.u[i]**2
 m.x2dotcon = Constraint(m.t, rule=_x2dot)
 
 def _init(M):

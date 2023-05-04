@@ -20,9 +20,7 @@ model.y = Var(model.J, domain=NonNegativeReals)
 
 # to avoid warnings, we set breakpoints at or beyond the bounds
 PieceCnt = 100
-bpts = []
-for i in range(PieceCnt+2):
-    bpts.append(float((i*Topx)/PieceCnt))
+bpts = [float((i*Topx)/PieceCnt) for i in range(PieceCnt+2)]
 
 def f4(model, j, xp):
     # we not need j, but it is passed as the index for the constraint

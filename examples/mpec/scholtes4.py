@@ -23,5 +23,7 @@ model.lin1 = Constraint(expr=-4 * model.z[1] + model.z3 <= 0)
 
 model.lin2 = Constraint(expr=-4 * model.z[2] + model.z3 <= 0)
 
-model.compl = Complementarity(expr=complements(0 <= model.z[1], model.z[2] >= 0))
+model.compl = Complementarity(
+    expr=complements(model.z[1] >= 0, model.z[2] >= 0)
+)
 

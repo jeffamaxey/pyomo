@@ -60,18 +60,14 @@ def no_overlap_disjunct_rule(disjunct, i, j, recRelation):
     # left
     if recRelation == 'LeftOf':
         disjunct.c = Constraint(expr=model.x[i] + model.Lengths[i] <= model.x[j])
-    # right
     elif recRelation == 'RightOf':
         disjunct.c = Constraint(expr=model.x[j] + model.Lengths[j] <= model.x[i])
-    # above
     elif recRelation == 'Above':
         disjunct.c = Constraint(expr=model.y[i] - model.Heights[i] >= model.y[j])
-    # below
     elif recRelation == 'Below':
         disjunct.c = Constraint(expr=model.y[j] - model.Heights[j] >= model.y[i])
     else:
-        raise RuntimeError("Unrecognized rectangle relationship: %s" 
-                           % recRelation)
+        raise RuntimeError(f"Unrecognized rectangle relationship: {recRelation}")
 model.no_overlap_disjunct = Disjunct(model.RectanglePairs, model.RecRelations,
     rule=no_overlap_disjunct_rule)
 

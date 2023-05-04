@@ -231,13 +231,10 @@ class _StreamHandle(object):
             self.encoding = encoding or self.write_file.encoding
         except AttributeError:
             self.encoding = None
-        if self.encoding:
-            self.output_buffer = ''
-        else:
-            self.output_buffer = b''
+        self.output_buffer = '' if self.encoding else b''
 
     def __repr__(self):
-        return "%s(%s)" % (self.buffering, id(self))
+        return f"{self.buffering}({id(self)})"
 
     def fileno(self):
         return self.read_pipe
@@ -435,10 +432,6 @@ class TeeStream(object):
             th.daemon = True
             th.start()
             self._threads.append(th)
-        else:
-            # The merged reader is already running... nothing additional
-            # needs to be done
-            pass
             
     def _streamReader(self, handle):
         while True:
@@ -482,8 +475,7 @@ class TeeStream(object):
                 for handle in list(handles):
                     try:
                         pipe = get_osfhandle(handle.read_pipe)
-                        numAvail = PeekNamedPipe(pipe, 0)[1]
-                        if numAvail:
+                        if numAvail := PeekNamedPipe(pipe, 0)[1]:
                             result, new_data = ReadFile(pipe, numAvail, None)
                             handle.decoder_buffer += new_data
                             break

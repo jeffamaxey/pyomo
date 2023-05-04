@@ -25,7 +25,7 @@ from pyomo.common.timing import (
 from pyomo.environ import ConcreteModel, RangeSet, Var, TransformationFactory
 
 class _pseudo_component(Var):
-    def getname(*args, **kwds):
+    def getname(self, **kwds):
         raise RuntimeError("fail")
 
 class TestTiming(unittest.TestCase):
@@ -274,10 +274,10 @@ all                    1     [0-9.]+ +[0-9.]+ +100.0
         start_time = time.perf_counter()
         timer.start('all'*25)
         time.sleep(0.02)
-        for i in range(10):
+        for _ in range(10):
             timer.start('a'*75)
             time.sleep(0.01)
-            for j in range(5):
+            for _ in range(5):
                 timer.start('aa'*20)
                 time.sleep(0.001)
                 timer.stop('aa'*20)
@@ -286,8 +286,8 @@ all                    1     [0-9.]+ +[0-9.]+ +100.0
             timer.stop('a'*75)
         end_time = time.perf_counter()
         timer.stop('all'*25)
-        ref = (
-"""Identifier%s   ncalls   cumtime   percall      %%
+            ref = (
+        """Identifier%s   ncalls   cumtime   percall  %%
 %s------------------------------------
 %s%s        1     [0-9.]+ +[0-9.]+ +100.0
     %s------------------------------------
@@ -301,18 +301,18 @@ all                    1     [0-9.]+ +[0-9.]+ +100.0
     %s====================================
 %s====================================
 """ % (
-    ' '*69,
-    '-'*79,
-    'all'*25, ' '*4,
-    '-'*75,
-    'a'*75, '',
-    '-'*71,
-    'aa'*20, ' '*31,
-    'ab'*20, ' '*31,
-    ' '*66,
-    '='*71,
-    ' '*70,
-    '='*75,
-    '='*79)).splitlines()
+        ' '*69,
+        '-'*79,
+        'all'*25, ' '*4,
+        '-'*75,
+        'a'*75, '',
+        '-'*71,
+        'aa'*20, ' '*31,
+        'ab'*20, ' '*31,
+        ' '*66,
+        '='*71,
+        ' '*70,
+        '='*75,
+        '='*79)).splitlines()
         for l, r in zip(str(timer).splitlines(), ref):
             self.assertRegex(l, r)

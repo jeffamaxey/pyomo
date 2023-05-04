@@ -147,10 +147,7 @@ def stochd_init(m,k,j,t):
     #     return m.d[j]                         
     if t < m.TDEC+1:
         return m.d[j]
-    if t >= m.TDEC+1 and t < m.TDEC+1+4.5:
-        return m.rand_d[k,j]
-    if t >= m.TDEC+1+4.5:
-        return m.d[j]                         
+    return m.rand_d[k,j] if t < m.TDEC+1+4.5 else m.d[j]                         
 
 model.stochd = Param(model.SCEN,model.DEM,model.TIME,within=PositiveReals,mutable=True,default=stochd_init)
 
@@ -278,17 +275,13 @@ model.pres_ss = Constraint(model.SCEN,model.LINK,model.DIS,rule=pres_ss_rule)
 def nonantdq_rule(m,j,i,t):
     if j == 1:
         return Constraint.Skip
-    if t >= m.TDEC+1:
-        return Constraint.Skip
-    return m.dp[j,i,t] == m.dp[1,i,t]
+    return Constraint.Skip if t >= m.TDEC+1 else m.dp[j,i,t] == m.dp[1,i,t]
 
 model.nonantdq = Constraint(model.SCEN,model.LINK_A,model.TIME,rule=nonantdq_rule)
 
 def nonantde_rule(m,j,i,t):
     if j == 1:
         return Constraint.Skip
-    if t >= m.TDEC+1:
-        return Constraint.Skip
-    return m.dem[j,i,t] == m.dem[1,i,t]
+    return Constraint.Skip if t >= m.TDEC+1 else m.dem[j,i,t] == m.dem[1,i,t]
 
 model.nonantde = Constraint(model.SCEN,model.DEM,model.TIME,rule=nonantde_rule)

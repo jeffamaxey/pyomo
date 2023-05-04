@@ -77,9 +77,11 @@ else:
     # but is included for [as yet unknown] platforms that ONLY implement
     # the API documented in the logging library
     def is_debug_set(logger):
-        if not logger.isEnabledFor(_DEBUG):
-            return False
-        return logger.getEffectiveLevel() > _NOTSET
+        return (
+            logger.getEffectiveLevel() > _NOTSET
+            if logger.isEnabledFor(_DEBUG)
+            else False
+        )
 
 class WrappingFormatter(logging.Formatter):
     _flag = "<<!MSG!>>"
@@ -93,8 +95,7 @@ class WrappingFormatter(logging.Formatter):
             elif kwds['style'] == '$':
                 kwds['fmt'] = '$levelname: $message'
             else:
-                raise ValueError('unrecognized style flag "%s"'
-                                 % (kwds['style'],))
+                raise ValueError(f"""unrecognized style flag "{kwds['style']}\"""")
         self._wrapper = textwrap.TextWrapper(width=kwds.pop('wrap', 78))
         self.hang = kwds.pop('hang', ' '*4)
         self.basepath = kwds.pop('base', None)
@@ -110,7 +111,7 @@ class WrappingFormatter(logging.Formatter):
         if _id:
             record.levelname += f" ({_id.upper()})"
         if self.basepath and record.pathname.startswith(self.basepath):
-            record.pathname = '[base]' + record.pathname[len(self.basepath):]
+            record.pathname = f'[base]{record.pathname[len(self.basepath):]}'
         try:
             raw_msg = super(WrappingFormatter, self).format(record)
         finally:
@@ -169,24 +170,19 @@ class WrappingFormatter(logging.Formatter):
                 verbatim ^= True
             elif verbatim:
                 paragraphs.append((None, line))
+            elif matchBullet := _bullet_re.match(content):
+                paragraphs.append(
+                    (leading + ' '*len(matchBullet.group()), [content]))
+            elif paragraphs and paragraphs[-1][0] == leading:
+                paragraphs[-1][1].append( content )
             else:
-                matchBullet = _bullet_re.match(content)
-                if matchBullet:
-                    paragraphs.append(
-                        (leading + ' '*len(matchBullet.group()), [content]))
-                elif paragraphs and paragraphs[-1][0] == leading:
-                    paragraphs[-1][1].append( content )
-                else:
-                    paragraphs.append((leading, [content]))
+                paragraphs.append((leading, [content]))
 
         base_indent = (self.hang or '') + base_indent
 
         for i, (indent, par) in enumerate(paragraphs):
             if indent is None:
-                if par is None:
-                    paragraphs[i] = ''
-                else:
-                    paragraphs[i] = base_indent + par
+                paragraphs[i] = '' if par is None else base_indent + par
                 continue
 
             par_indent = base_indent + indent
@@ -196,9 +192,7 @@ class WrappingFormatter(logging.Formatter):
             else:
                 self._wrapper.initial_indent = par_indent
 
-            # Bulleted lists get indented with a hanging indent
-            bullet = _bullet_re.match(par[0])
-            if bullet:
+            if bullet := _bullet_re.match(par[0]):
                 self._wrapper.initial_indent = par_indent[:-len(bullet.group())]
 
             paragraphs[i] = self._wrapper.fill(' '.join(par))

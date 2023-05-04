@@ -54,7 +54,7 @@ def obj_rule(m):
 instance.obj = Objective(rule=obj_rule)
 
 endTime = time.time()-start
-print('model creation time = %s' % (endTime,))
+print(f'model creation time = {endTime}')
 
 for i in instance.SCEN:
     print("Scenario %s = %s" % (

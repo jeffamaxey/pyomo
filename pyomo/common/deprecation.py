@@ -57,13 +57,10 @@ def _default_msg(obj, user_msg, version, remove_in):
                    'future release.' % (_obj,)
     comment = []
     if version:
-        comment.append('deprecated in %s' % (version,))
+        comment.append(f'deprecated in {version}')
     if remove_in:
-        comment.append('will be removed in (or after) %s' % (remove_in))
-    if comment:
-        return user_msg + "  (%s)" % (', '.join(comment),)
-    else:
-        return user_msg
+        comment.append(f'will be removed in (or after) {remove_in}')
+    return f"{user_msg}  ({', '.join(comment)})" if comment else user_msg
 
 
 def _deprecation_docstring(obj, msg, version, remove_in):
@@ -176,22 +173,17 @@ def deprecation_warning(msg, logger=None, version=None,
 
     """
     if logger is None:
-        if calling_frame is not None:
-            cf = calling_frame
-        else:
-            # The relevant module is the one that holds the
-            # function/method that called deprecation_warning
-            cf = _find_calling_frame(1)
+        cf = calling_frame if calling_frame is not None else _find_calling_frame(1)
         if cf is not None:
             logger = cf.f_globals.get('__package__', None)
             if logger is not None and not logger.startswith('pyomo'):
                 logger = None
-        if logger is None:
-            logger = 'pyomo'
+    if logger is None:
+        logger = 'pyomo'
 
     msg = textwrap.fill(
-        'DEPRECATED: %s' % (_default_msg(None, msg, version, remove_in),),
-        width=70)
+        f'DEPRECATED: {_default_msg(None, msg, version, remove_in)}', width=70
+    )
     if calling_frame is None:
         # The useful thing to let the user know is what called the
         # function that generated the deprecation warning.  The current
@@ -261,8 +253,10 @@ def _import_object(name, target, version, remove_in):
     else:
         _type = 'attribute'
     deprecation_warning(
-        "the '%s' %s has been moved to '%s'.  Please update your import."
-        % (name, _type, target), version=version, remove_in=remove_in)
+        f"the '{name}' {_type} has been moved to '{target}'.  Please update your import.",
+        version=version,
+        remove_in=remove_in,
+    )
     return _object
 
 class _ModuleGetattrBackport_27(object):
@@ -319,8 +313,7 @@ class _ModuleGetattrBackport_35(types.ModuleType):
             target_obj = _import_object(name, *info)
             setattr(self, name, target_obj)
             return target_obj
-        raise AttributeError("module '%s' has no attribute '%s'"
-                             % (self.__name__, name))
+        raise AttributeError(f"module '{self.__name__}' has no attribute '{name}'")
 
 def relocated_module_attribute(local, target, version, remove_in=None):
     """Provide a deprecation path for moved / renamed module attributes
@@ -362,8 +355,8 @@ def relocated_module_attribute(local, target, version, remove_in=None):
                     return target_obj
                 elif _mod_getattr is not None:
                     return _mod_getattr(name)
-                raise AttributeError("module '%s' has no attribute '%s'"
-                                     % (_module.__name__, name))
+                raise AttributeError(f"module '{_module.__name__}' has no attribute '{name}'")
+
             _module.__getattr__ = __getattr__
         elif sys.version_info >= (3,5):
             # If you run across a case where this assertion fails
@@ -426,19 +419,21 @@ class RenamedClass(type):
         new_class = classdict.get('__renamed__new_class__', None)
         if new_class is not None:
             def __renamed__new__(cls, *args, **kwargs):
-                cls.__renamed__warning__(
-                    "Instantiating class '%s'." % (cls.__name__,))
+                cls.__renamed__warning__(f"Instantiating class '{cls.__name__}'.")
                 return new_class(*args, **kwargs)
+
             classdict['__new__'] = __renamed__new__
 
             def __renamed__warning__(msg):
                 version = classdict.get('__renamed__version__')
                 remove_in = classdict.get('__renamed__remove_in__')
                 deprecation_warning(
-                    "%s  The class '%s' has been renamed to '%s'." % (
-                        msg, name, new_class.__name__),
-                    version=version, remove_in=remove_in,
-                    calling_frame=_find_calling_frame(1))
+                    f"{msg}  The class '{name}' has been renamed to '{new_class.__name__}'.",
+                    version=version,
+                    remove_in=remove_in,
+                    calling_frame=_find_calling_frame(1),
+                )
+
             classdict['__renamed__warning__'] = __renamed__warning__
 
             if '__renamed__version__' not in classdict:
@@ -452,8 +447,8 @@ class RenamedClass(type):
             new_class = getattr(base, '__renamed__new_class__', None)
             if new_class is not None:
                 base.__renamed__warning__(
-                    "Declaring class '%s' derived from '%s'." % (
-                        name, base.__name__,))
+                    f"Declaring class '{name}' derived from '{base.__name__}'."
+                )
                 base = new_class
                 # Flag that this class is derived from a renamed class
                 classdict.setdefault('__renamed__new_class__', None)
@@ -470,27 +465,32 @@ class RenamedClass(type):
         if new_class is not None and new_class not in renamed_bases:
             renamed_bases.append(new_class)
 
-        if new_class is None and '__renamed__new_class__' not in classdict:
-            if not any(hasattr(base, '__renamed__new_class__') for mro in
-                       itertools.chain.from_iterable(
-                           base.__mro__ for base in renamed_bases)):
-                raise TypeError(
-                    "Declaring class '%s' using the RenamedClass metaclass, "
-                    "but without specifying the __renamed__new_class__ class "
-                    "attribute" % (name,))
+        if (
+            new_class is None
+            and '__renamed__new_class__' not in classdict
+            and not any(
+                hasattr(base, '__renamed__new_class__')
+                for mro in itertools.chain.from_iterable(
+                    base.__mro__ for base in renamed_bases
+                )
+            )
+        ):
+            raise TypeError(
+                f"Declaring class '{name}' using the RenamedClass metaclass, but without specifying the __renamed__new_class__ class attribute"
+            )
 
         return super().__new__(
             cls, name, tuple(renamed_bases), classdict, *args, **kwargs)
 
-    def __instancecheck__(cls, instance):
+    def __instancecheck__(self, instance):
         # Note: the warning is issued by subclasscheck
-        return any(cls.__subclasscheck__(c)
-            for c in {type(instance), instance.__class__})
+        return any(
+            self.__subclasscheck__(c) for c in {type(instance), instance.__class__}
+        )
 
     def __subclasscheck__(cls, subclass):
         if hasattr(cls, '__renamed__warning__'):
-            cls.__renamed__warning__(
-                "Checking type relative to '%s'." % (cls.__name__,))
+            cls.__renamed__warning__(f"Checking type relative to '{cls.__name__}'.")
         if subclass is cls:
             return True
         elif getattr(cls, '__renamed__new_class__') is not None:

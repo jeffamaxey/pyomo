@@ -69,7 +69,7 @@ m.vd = aml.Var(m.s,
 def vl_(m, i):
     return (i, None)
 m.vl = aml.VarList(bounds=vl_)
-for j in m.q:
+for _ in m.q:
     m.vl.add()
 # @Variables_list
 

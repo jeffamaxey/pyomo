@@ -83,8 +83,8 @@ class ComponentMap(collections_MutableMapping):
 
     def __str__(self):
         """String representation of the mapping."""
-        tmp = {str(c)+" (id="+str(id(c))+")":v for c,v in self.items()}
-        return "ComponentMap("+str(tmp)+")"
+        tmp = {f"{str(c)} (id={id(c)})": v for c,v in self.items()}
+        return f"ComponentMap({tmp})"
 
     #
     # Implement MutableMapping abstract methods
@@ -94,8 +94,7 @@ class ComponentMap(collections_MutableMapping):
         try:
             return self._dict[id(obj)][1]
         except KeyError:
-            raise KeyError("Component with id '%s': %s"
-                           % (id(obj), str(obj)))
+            raise KeyError(f"Component with id '{id(obj)}': {str(obj)}")
 
     def __setitem__(self, obj, val):
         self._dict[id(obj)] = (obj,val)
@@ -104,8 +103,7 @@ class ComponentMap(collections_MutableMapping):
         try:
             del self._dict[id(obj)]
         except KeyError:
-            raise KeyError("Component with id '%s': %s"
-                           % (id(obj), str(obj)))
+            raise KeyError(f"Component with id '{id(obj)}': {str(obj)}")
 
     def __iter__(self):
         return (obj \
@@ -124,12 +122,12 @@ class ComponentMap(collections_MutableMapping):
     # plain dictionary mapping key->(type(val), id(val)) and
     # compare that instead.
     def __eq__(self, other):
-        if not isinstance(other, collections_Mapping):
-            return False
-        return {(type(key), id(key)):val
-                    for key, val in self.items()} == \
-               {(type(key), id(key)):val
-                    for key, val in other.items()}
+        return (
+            {(type(key), id(key)): val for key, val in self.items()}
+            == {(type(key), id(key)): val for key, val in other.items()}
+            if isinstance(other, collections_Mapping)
+            else False
+        )
 
     def __ne__(self, other):
         return not (self == other)
@@ -151,9 +149,7 @@ class ComponentMap(collections_MutableMapping):
 
     def get(self, key, default=None):
         'D.get(k[,d]) -> D[k] if k in D, else d.  d defaults to None.'
-        if key in self:
-            return self[key]
-        return default
+        return self[key] if key in self else default
 
     def setdefault(self, key, default=None):
         'D.setdefault(k[,d]) -> D.get(k,d), also set D[k]=d if k not in D'

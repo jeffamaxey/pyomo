@@ -85,7 +85,12 @@ model.sell_lim_price = Param(model.PROD, model.TWOPLUSWEEKS, \
                              default=0.0, mutable=True)
 
 def time1_rule(model):
-    return (None, sum([1.0 / model.rate[p] * model.Make1[p] for p in model.PROD]) - model.avail[1], 0.0)
+    return (
+        None,
+        sum(1.0 / model.rate[p] * model.Make1[p] for p in model.PROD)
+        - model.avail[1],
+        0.0,
+    )
 model.Time1 = Constraint(rule=time1_rule)
 
 def balance1_rule(model, p):
@@ -96,10 +101,15 @@ model.Balance1 = Constraint(model.PROD, rule=balance1_rule)
 model.Cut_Defn = ConstraintList()
 
 def expected_profit_rule(model):
-    return sum([model.prob[s] * model.revenue[p, 1, s] * model.Sell1[p] - \
-                model.prob[s] * model.prodcost[p] * model.Make1[p] - \
-                model.prob[s] * model.invcost[p] * model.Inv1[p] \
-                for p in model.PROD for s in model.SCEN]) + \
-           model.Min_Stage2_Profit
+    return (
+        sum(
+            model.prob[s] * model.revenue[p, 1, s] * model.Sell1[p]
+            - model.prob[s] * model.prodcost[p] * model.Make1[p]
+            - model.prob[s] * model.invcost[p] * model.Inv1[p]
+            for p in model.PROD
+            for s in model.SCEN
+        )
+        + model.Min_Stage2_Profit
+    )
 
 model.Expected_Profit = Objective(rule=expected_profit_rule, sense=maximize)

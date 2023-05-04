@@ -68,8 +68,7 @@ s = pmo.sos([v1,v2], weights=[1.2,2.5])
 assert s.weights == (1.2,2.5)
 
 # using paramters
-p = pmo.parameter_list(
-    pmo.parameter() for i in range(2))
+p = pmo.parameter_list(pmo.parameter() for _ in range(2))
 s = pmo.sos([v1,v2], weights=[p[0]**2, p[1]**2])
 assert len(s.weights) == 2
 p[0].value = 1
@@ -77,8 +76,7 @@ p[1].value = 2
 assert tuple(pmo.value(w) for w in s.weights) == (1, 4)
 
 # using data expressions
-d = pmo.expression_list(
-    pmo.data_expression() for i in range(2))
+d = pmo.expression_list(pmo.data_expression() for _ in range(2))
 s = pmo.sos([v1,v2], weights=d)
 assert len(s.weights) == 2
 d[0].expr = p[0] + 1
@@ -93,9 +91,7 @@ domain = [-1.1, 4.49, 8.1, -30.2, 12.5]
 
 m = pmo.block()
 
-m.z = pmo.variable_list(
-    pmo.variable(lb=0)
-    for i in range(len(domain)))
+m.z = pmo.variable_list(pmo.variable(lb=0) for _ in range(len(domain)))
 m.y = pmo.variable()
 
 m.o = pmo.objective(m.y, sense=pmo.maximize)

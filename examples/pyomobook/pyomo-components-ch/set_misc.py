@@ -54,9 +54,9 @@ model = pyo.ConcreteModel()
 model.A = pyo.Set(initialize=[1, 2, 3])
 model.C = pyo.Set(model.A, initialize={1:[1], 2:[1, 2]})
 
-print(sorted(e for e in model.A))   # [1, 2, 3]
+print(sorted(iter(model.A)))
 for index in model.C:
-    print(sorted(e for e in model.C[index]))
+  print(sorted(iter(model.C[index])))
 # [1]
 # [1, 2]
 # @:iter

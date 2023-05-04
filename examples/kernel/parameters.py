@@ -5,7 +5,7 @@ import pyomo.kernel as pmo
 #
 
 p = pmo.parameter()
-assert p.value == None
+assert p.value is None
 
 p = pmo.parameter(value=2)
 assert p.value == 2

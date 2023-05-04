@@ -21,14 +21,10 @@ class ModelScript(object):
             raise ValueError("Must provide either a script file or text data")
 
     def read(self):
-        if self._filename is not None:
-            with open(self._filename, 'r') as f:
-                return f.read()
-        else:
+        if self._filename is None:
             return self._text
+        with open(self._filename, 'r') as f:
+            return f.read()
 
     def filename(self):
-        if self._filename is not None:
-            return self._filename
-        else:
-            return "<unknown>"
+        return self._filename if self._filename is not None else "<unknown>"

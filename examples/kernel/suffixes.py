@@ -19,7 +19,7 @@ assert len(s) == 0
 v = pmo.variable()
 s[v] = 2
 assert len(s) == 1
-assert bool(v in s) == True
+assert v in s
 assert s[v] == 2
 
 # error (a dict / list container is not a component)

@@ -31,9 +31,7 @@ def _pde(m,i,j):
 m.pde = Constraint(m.x,m.t,rule=_pde)
 
 def _initcon(m,i):
-    if i == 0 or i == 1:
-        return Constraint.Skip
-    return m.u[i,0] == sin(m.pi*i)
+    return Constraint.Skip if i in [0, 1] else m.u[i,0] == sin(m.pi*i)
 m.initcon = Constraint(m.x,rule=_initcon)
 
 def _lowerbound(m,j):

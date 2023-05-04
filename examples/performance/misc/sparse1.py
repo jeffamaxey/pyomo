@@ -10,9 +10,8 @@ def f(N):
     M.x = Var()
     M.o = Objective(expr=M.x)
     def rule(m, i):
-        if i == 3 or i == 5:
-            return M.x >= i
-        return Constraint.Skip
+        return M.x >= i if i in [3, 5] else Constraint.Skip
+
     M.c = Constraint(M.A, rule=rule)
     return M
 

@@ -112,7 +112,7 @@ class _deprecated_plugin_dict(dict):
         super().__init__()
         msg = classdict.pop('__deprecated_message__', None)
         if not msg:
-            msg = 'The %s interface has been deprecated' % (name,)
+            msg = f'The {name} interface has been deprecated'
         version = classdict.pop('__deprecated_version__', None)
         remove_in = classdict.pop('__deprecated_remove_in__', None)
         self._deprecation_info = {
@@ -161,7 +161,7 @@ class PluginMeta(type):
         # the same interface, use standard Python rules to determine
         # which implements() should govern (i.e. classdict supersedes
         # bases, bases resolved in order)
-        interfaces = set(impl[0] for impl in implements)
+        interfaces = {impl[0] for impl in implements}
         for base in bases:
             implements.extend(
                 ep for ep in getattr(base, '__implements__', [])
@@ -210,8 +210,8 @@ class Plugin(object, metaclass=PluginMeta):
     def __new__(cls):
         if cls.__singleton__ is not None:
             raise RuntimeError(
-                "Cannot create multiple singleton plugin instances of type %s"
-                % (cls,))
+                f"Cannot create multiple singleton plugin instances of type {cls}"
+            )
         obj = super().__new__(cls)
         obj._plugin_ids = {}
         # Record this instance (service) with all Interfaces

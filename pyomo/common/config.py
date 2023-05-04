@@ -68,8 +68,7 @@ def Bool(val):
         v = int(val)
         if v in {0, 1}:
             return bool(v)
-    raise ValueError(
-        "Expected Boolean, but received %s" % (val,))
+    raise ValueError(f"Expected Boolean, but received {val}")
 
 def Integer(val):
     """Domain validation function admitting integers
@@ -83,8 +82,7 @@ def Integer(val):
     ans = int(val)
     # We want to give an error for floating point numbers...
     if ans != float(val):
-        raise ValueError(
-            "Expected integer, but received %s" % (val,))
+        raise ValueError(f"Expected integer, but received {val}")
     return ans
 
 def PositiveInt(val):
@@ -97,8 +95,7 @@ def PositiveInt(val):
     ans = int(val)
     # We want to give an error for floating point numbers...
     if ans != float(val) or ans <= 0:
-        raise ValueError(
-            "Expected positive int, but received %s" % (val,))
+        raise ValueError(f"Expected positive int, but received {val}")
     return ans
 
 def NegativeInt(val):
@@ -110,8 +107,7 @@ def NegativeInt(val):
     """
     ans = int(val)
     if ans != float(val) or ans >= 0:
-        raise ValueError(
-            "Expected negative int, but received %s" % (val,))
+        raise ValueError(f"Expected negative int, but received {val}")
     return ans
 
 def NonPositiveInt(val):
@@ -123,8 +119,7 @@ def NonPositiveInt(val):
     """
     ans = int(val)
     if ans != float(val) or ans > 0:
-        raise ValueError(
-            "Expected non-positive int, but received %s" % (val,))
+        raise ValueError(f"Expected non-positive int, but received {val}")
     return ans
 
 def NonNegativeInt(val):
@@ -136,8 +131,7 @@ def NonNegativeInt(val):
     """
     ans = int(val)
     if ans != float(val) or ans < 0:
-        raise ValueError(
-            "Expected non-negative int, but received %s" % (val,))
+        raise ValueError(f"Expected non-negative int, but received {val}")
     return ans
 
 def PositiveFloat(val):
@@ -150,8 +144,7 @@ def PositiveFloat(val):
     """
     ans = float(val)
     if ans <= 0:
-        raise ValueError(
-            "Expected positive float, but received %s" % (val,))
+        raise ValueError(f"Expected positive float, but received {val}")
     return ans
 
 def NegativeFloat(val):
@@ -164,8 +157,7 @@ def NegativeFloat(val):
     """
     ans = float(val)
     if ans >= 0:
-        raise ValueError(
-            "Expected negative float, but received %s" % (val,))
+        raise ValueError(f"Expected negative float, but received {val}")
     return ans
 
 def NonPositiveFloat(val):
@@ -178,8 +170,7 @@ def NonPositiveFloat(val):
     """
     ans = float(val)
     if ans > 0:
-        raise ValueError(
-            "Expected non-positive float, but received %s" % (val,))
+        raise ValueError(f"Expected non-positive float, but received {val}")
     return ans
 
 def NonNegativeFloat(val):
@@ -192,8 +183,7 @@ def NonNegativeFloat(val):
     """
     ans = float(val)
     if ans < 0:
-        raise ValueError(
-            "Expected non-negative float, but received %s" % (val,))
+        raise ValueError(f"Expected non-negative float, but received {val}")
     return ans
 
 
@@ -241,20 +231,14 @@ class In(object):
         self._cast = cast
 
     def __call__(self, value):
-        if self._cast is not None:
-            v = self._cast(value)
-        else:
-            v = value
+        v = self._cast(value) if self._cast is not None else value
         if v in self._domain:
             return v
-        raise ValueError("value %s not in domain %s" % (value, self._domain))
+        raise ValueError(f"value {value} not in domain {self._domain}")
 
     def domain_name(self):
         _dn = str(self._domain)
-        if not _dn or _dn[0] not in '[({':
-            return f'In({_dn})'
-        else:
-            return f'In{_dn}'
+        return f'In({_dn})' if not _dn or _dn[0] not in '[({' else f'In{_dn}'
 
 
 class InEnum(object):
@@ -313,16 +297,12 @@ class ListOf(object):
     """
     def __init__(self, itemtype, domain=None, string_lexer=NOTSET):
         self.itemtype = itemtype
-        if domain is None:
-            self.domain = self.itemtype
-        else:
-            self.domain = domain
+        self.domain = self.itemtype if domain is None else domain
         if string_lexer is NOTSET:
             self.string_lexer = _default_string_list_lexer
         else:
             self.string_lexer = string_lexer
-        self.__name__ = 'ListOf(%s)' % (
-            getattr(self.domain, '__name__', self.domain),)
+        self.__name__ = f"ListOf({getattr(self.domain, '__name__', self.domain)})"
 
     def __call__(self, value):
         if isinstance(value, str) and self.string_lexer is not None:
@@ -441,17 +421,10 @@ class Path(object):
         if not _expand:
             return path
 
-        if self.basePath:
-            base = self.basePath
-        else:
-            base = Path.BasePath
+        base = self.basePath if self.basePath else Path.BasePath
         if type(base) is ConfigValue:
             base = base.value()
-        if base is None:
-            base = ""
-        else:
-            base = str(base).lstrip()
-
+        base = "" if base is None else str(base).lstrip()
         # We want to handle the CWD variable ourselves.  It should
         # always be in a known location (the beginning of the string)
         if base and base[:6].lower() == '${cwd}':
@@ -459,10 +432,14 @@ class Path(object):
         if path and path[:6].lower() == '${cwd}':
             path = os.getcwd() + path[6:]
 
-        ans = os.path.normpath(os.path.abspath(os.path.join(
-            os.path.expanduser(os.path.expandvars(base)),
-            os.path.expanduser(os.path.expandvars(path)))))
-        return ans
+        return os.path.normpath(
+            os.path.abspath(
+                os.path.join(
+                    os.path.expanduser(os.path.expandvars(base)),
+                    os.path.expanduser(os.path.expandvars(path)),
+                )
+            )
+        )
 
 
 class PathList(Path):
@@ -588,11 +565,7 @@ class ConfigEnum(enum.Enum):
 
     @classmethod
     def from_enum_or_string(cls, arg):
-        if type(arg) is str:
-            return cls[arg]
-        else:
-            # Handles enum or integer inputs
-            return cls(arg)
+        return cls[arg] if type(arg) is str else cls(arg)
 
 
 __doc__ = """
@@ -1020,9 +993,8 @@ def _dump(*args, **kwds):
         #dump = lambda x,**y: str(x)
         # YAML uses lowercase True/False
         def dump(x, **args):
-            if type(x) is bool:
-                return str(x).lower()
-            return str(x)
+            return str(x).lower() if type(x) is bool else str(x)
+
     assert '_dump' in globals()
     globals()['_dump'] = dump
     return dump(*args, **kwds)
@@ -1168,7 +1140,7 @@ def _build_lexer(literals=''):
         return t
 
     # A "word" contains no whitesspace or commas
-    @ply.lex.TOKEN(r'[^' + repr(t_ignore+literals) + r']+')
+    @ply.lex.TOKEN(f'[^{repr(t_ignore + literals)}]+')
     def t_WORD(t):
         t.value = t.value
         return t
@@ -1177,8 +1149,9 @@ def _build_lexer(literals=''):
     def t_error(t):
         # Note this parser does not allow "\n", so lexpos is the
         # column number
-        raise IOError("ERROR: Token '%s' Line %s Column %s"
-          % (t.value, t.lineno, t.lexpos+1))
+        raise IOError(
+            f"ERROR: Token '{t.value}' Line {t.lineno} Column {t.lexpos + 1}"
+        )
 
     return ply.lex.lex()
 
@@ -1196,10 +1169,10 @@ def _default_string_list_lexer(value):
         _default_string_list_lexer._lex = _lex = _build_lexer()
     _lex.input(value)
     while True:
-        tok = _lex.token()
-        if not tok:
+        if tok := _lex.token():
+            yield tok.value
+        else:
             break
-        yield tok.value
 
 _default_string_list_lexer._lex = None
 
@@ -1229,12 +1202,12 @@ def _default_string_dict_lexer(value):
             raise ValueError(
                 f"Expected ':' or '=' but found '{sep.value}' at "
                 f"Line {sep.lineno} Column {sep.lexpos+1}")
-        val = _lex.token()
-        if not val:
+        if val := _lex.token():
+            yield key.value, val.value
+        else:
             raise ValueError(
                 f"Expected value following '{sep.type}' "
                 f"but encountered end of string")
-        yield key.value, val.value
 
 _default_string_dict_lexer._lex = None
 
@@ -1286,10 +1259,7 @@ class ConfigBase(object):
         # the super-class's __getstate__ (since that class is NOT
         # 'object').
         _base = super()
-        if hasattr(_base, '__getstate__'):
-            state = _base.__getstate__()
-        else:
-            state = {}
+        state = _base.__getstate__() if hasattr(_base, '__getstate__') else {}
         state.update((key, getattr(self, key)) for key in ConfigBase.__slots__)
         state['_domain'] = _picklable(state['_domain'], self)
         state['_parent'] = None
@@ -1330,7 +1300,7 @@ class ConfigBase(object):
             if type(field) is tuple:
                 field, attr = field
             else:
-                attr = '_'+field
+                attr = f'_{field}'
             if locals()[field] is NOTSET:
                 kwds[field] = getattr(self, attr, NOTSET)
             else:
@@ -1368,15 +1338,13 @@ class ConfigBase(object):
             if self._name.startswith('[') or not pName:
                 return pName + self._name
             else:
-                return pName + '.' + self._name
+                return f'{pName}.{self._name}'
         else:
             return self._name
 
     def domain_name(self):
         _dn = _domain_name(self._domain)
-        if _dn is None:
-            return _munge_name(self.name(), False)
-        return _dn
+        return _munge_name(self.name(), False) if _dn is None else _dn
 
     def set_default_value(self, default):
         self._default = default
@@ -1388,23 +1356,20 @@ class ConfigBase(object):
     def _cast(self, value):
         if value is None:
             return value
-        if self._domain is not None:
-            try:
-                if value is not NOTSET:
-                    return self._domain(value)
-                else:
-                    return self._domain()
-            except:
-                err = sys.exc_info()[1]
-                if hasattr(self._domain, '__name__'):
-                    _dom = self._domain.__name__
-                else:
-                    _dom = type(self._domain)
-                raise ValueError("invalid value for configuration '%s':\n"
-                                 "\tFailed casting %s\n\tto %s\n\tError: %s" %
-                                 (self.name(True), value, _dom, err))
-        else:
+        if self._domain is None:
             return value
+        try:
+            return self._domain(value) if value is not NOTSET else self._domain()
+        except:
+            err = sys.exc_info()[1]
+            _dom = (
+                self._domain.__name__
+                if hasattr(self._domain, '__name__')
+                else type(self._domain)
+            )
+            raise ValueError("invalid value for configuration '%s':\n"
+                             "\tFailed casting %s\n\tto %s\n\tError: %s" %
+                             (self.name(True), value, _dom, err))
 
     def reset(self):
         #
@@ -1444,13 +1409,13 @@ class ConfigBase(object):
             else:
                 kwds['action'] = 'store_false'
                 if not args:
-                    args = ('--disable-' + _munge_name(self.name()),)
+                    args = (f'--disable-{_munge_name(self.name())}', )
                 if 'help' not in kwds:
-                    kwds['help'] = "[DON'T] " + self._description
+                    kwds['help'] = f"[DON'T] {self._description}"
         if 'help' not in kwds:
             kwds['help'] = self._description
         if not args:
-            args = ('--' + _munge_name(self.name()),)
+            args = (f'--{_munge_name(self.name())}', )
         if self._argparse:
             self._argparse = self._argparse + ((args, kwds),)
         else:
@@ -1505,7 +1470,7 @@ class ConfigBase(object):
                 else:
                     _issub, _parser = _get_subparser_or_group(_parser, _group)
             if 'dest' not in _kwds:
-                _kwds['dest'] = 'CONFIGBLOCK.' + obj.name(True)
+                _kwds['dest'] = f'CONFIGBLOCK.{obj.name(True)}'
                 if ( 'metavar' not in _kwds
                      and _kwds.get('action','') not in _store_bool
                      and obj._domain is not None ):
@@ -1528,7 +1493,7 @@ class ConfigBase(object):
                     if _dest in parsed_args:
                         obj.set_value(parsed_args.__dict__[_dest])
                 else:
-                    _dest = 'CONFIGBLOCK.' + obj.name(True)
+                    _dest = f'CONFIGBLOCK.{obj.name(True)}'
                     if _dest in parsed_args:
                         obj.set_value(parsed_args.__dict__[_dest])
                         del parsed_args.__dict__[_dest]
@@ -1537,8 +1502,9 @@ class ConfigBase(object):
     def display(self, content_filter=None, indent_spacing=2, ostream=None,
                 visibility=None):
         if content_filter not in ConfigDict.content_filters:
-            raise ValueError("unknown content filter '%s'; valid values are %s"
-                             % (content_filter, ConfigDict.content_filters))
+            raise ValueError(
+                f"unknown content filter '{content_filter}'; valid values are {ConfigDict.content_filters}"
+            )
         _blocks = []
         if ostream is None:
             ostream=sys.stdout
@@ -1645,7 +1611,7 @@ class ConfigBase(object):
         level = []
         lastObj = self
         indent = ''
-        for lvl, pre, val, obj in self._data_collector(1, '', visibility, True):
+        for lvl, pre, val, obj in lastObj._data_collector(1, '', visibility, True):
             if len(level) < lvl:
                 while len(level) < lvl - 1:
                     level.append(None)
@@ -1669,13 +1635,9 @@ class ConfigBase(object):
                 os.write(indent + item_start % obj.name())
             elif item_start:
                 os.write(indent + item_start)
-            _doc = obj._doc or obj._description or ""
-            if _doc:
+            if _doc := obj._doc or obj._description or "":
                 _wrapLines = '\n ' not in _doc
-                if '%s' in item_body:
-                    _doc = item_body % (_doc,)
-                elif _doc:
-                    _doc = item_body
+                _doc = item_body % (_doc,) if '%s' in item_body else item_body
                 if _wrapLines:
                     doc_lines = wrap(
                         _doc,
@@ -1787,7 +1749,7 @@ class ConfigValue(ConfigBase):
 
 
 class ImmutableConfigValue(ConfigValue):
-    def __new__(self, *args, **kwds):
+    def __new__(cls, *args, **kwds):
         # ImmutableConfigValue objects are never directly created, and
         # any attempt to copy one will generate a mutable ConfigValue
         # object
@@ -1795,7 +1757,7 @@ class ImmutableConfigValue(ConfigValue):
 
     def set_value(self, value):
         if self._cast(value) != self._data:
-            raise RuntimeError(str(self) + ' is currently immutable')
+            raise RuntimeError(f'{str(self)} is currently immutable')
         super(ImmutableConfigValue, self).set_value(value)
 
 
@@ -1894,9 +1856,7 @@ class ConfigList(ConfigBase, Sequence):
         ConfigBase.__init__(self, *args, **kwds)
         if self._domain is None:
             self._domain = ConfigValue()
-        elif isinstance(self._domain, ConfigBase):
-            pass
-        else:
+        elif not isinstance(self._domain, ConfigBase):
             self._domain = ConfigValue(None, domain=self._domain)
         self.reset()
 
@@ -1908,19 +1868,15 @@ class ConfigList(ConfigBase, Sequence):
     def __getitem__(self, key):
         val = self._data[key]
         self._userAccessed = True
-        if isinstance(val, ConfigValue):
-            return val.value()
-        else:
-            return val
+        return val.value() if isinstance(val, ConfigValue) else val
 
     def get(self, key, default=NOTSET):
         # Note: get() is borrowed from ConfigDict for cases where we
         # want the raw stored object (and to aviod the implicit
         # conversion of ConfigValue members to their stored data).
         try:
-            val = self._data[key]
             self._userAccessed = True
-            return val
+            return self._data[key]
         except IndexError:
             if default is NOTSET:
                 raise
@@ -1984,7 +1940,7 @@ class ConfigList(ConfigBase, Sequence):
             return
         self._data.append(val)
         self._data[-1]._parent = self
-        self._data[-1]._name = '[%s]' % (len(self._data) - 1,)
+        self._data[-1]._name = f'[{len(self._data) - 1}]'
         self._data[-1]._userSet = True
         # Adding something to the container should not change the
         # userSet on the container (see Pyomo/pyomo#352; now
@@ -2012,8 +1968,7 @@ class ConfigList(ConfigBase, Sequence):
                                                      visibility, docMode)
             # Pop off the (empty) block entry
             next(subDomain)
-            for v in subDomain:
-                yield v
+            yield from subDomain
             return
         if prefix:
             if not self._data:
@@ -2023,8 +1978,7 @@ class ConfigList(ConfigBase, Sequence):
                 if level is not None:
                     level += 1
         for value in self._data:
-            for v in value._data_collector(level, '- ', visibility, docMode):
-                yield v
+            yield from value._data_collector(level, '- ', visibility, docMode)
 
 
 class ConfigDict(ConfigBase, Mapping):
@@ -2116,23 +2070,19 @@ class ConfigDict(ConfigBase, Mapping):
             return self._data[_key]
         if default is NOTSET:
             return None
-        if self._implicit_domain is not None:
-            if type(self._implicit_domain) is DynamicImplicitDomain:
-                return self._implicit_domain(key, default)
-            else:
-                return self._implicit_domain(default)
-        else:
+        if self._implicit_domain is None:
             return ConfigValue(default)
+        if type(self._implicit_domain) is DynamicImplicitDomain:
+            return self._implicit_domain(key, default)
+        else:
+            return self._implicit_domain(default)
 
     def setdefault(self, key, default=NOTSET):
         self._userAccessed = True
         _key = str(key).replace(' ','_')
         if _key in self._data:
             return self._data[_key]
-        if default is NOTSET:
-            return self.add(key, None)
-        else:
-            return self.add(key, default)
+        return self.add(key, None) if default is NOTSET else self.add(key, default)
 
     def __setitem__(self, key, val):
         _key = str(key).replace(' ','_')
@@ -2169,7 +2119,7 @@ class ConfigDict(ConfigBase, Mapping):
         #    return super(ConfigDict,self).__getattribute__(name)
         _name = name.replace(' ', '_')
         if _name not in self._data:
-            raise AttributeError("Unknown attribute '%s'" % name)
+            raise AttributeError(f"Unknown attribute '{name}'")
         return ConfigDict.__getitem__(self, _name)
 
     def __setattr__(self, name, value):
@@ -2183,11 +2133,13 @@ class ConfigDict(ConfigBase, Mapping):
         if _key in self._data:
             del self[_key]
         elif _key in dir(self):
-            raise AttributeError("'%s' object attribute '%s' is read-only" %
-                                 (type(self).__name__, name))
+            raise AttributeError(
+                f"'{type(self).__name__}' object attribute '{name}' is read-only"
+            )
         else:
-            raise AttributeError("'%s' object has no attribute '%s'" %
-                                 (type(self).__name__, name))
+            raise AttributeError(
+                f"'{type(self).__name__}' object has no attribute '{name}'"
+            )
 
     def keys(self):
         return iter(self)
@@ -2219,16 +2171,15 @@ class ConfigDict(ConfigBase, Mapping):
 
     def _add(self, name, config):
         name = str(name)
-        _name = name.replace(' ', '_')
         if config._parent is not None:
             raise ValueError(
-                "config '%s' is already assigned to ConfigDict '%s'; "
-                "cannot reassign to '%s'" %
-                (name, config._parent.name(True), self.name(True)))
+                f"config '{name}' is already assigned to ConfigDict '{config._parent.name(True)}'; cannot reassign to '{self.name(True)}'"
+            )
+        _name = name.replace(' ', '_')
         if _name in self._data:
             raise ValueError(
-                "duplicate config '%s' defined for ConfigDict '%s'" %
-                (name, self.name(True)))
+                f"duplicate config '{name}' defined for ConfigDict '{self.name(True)}'"
+            )
         self._data[_name] = config
         self._decl_order.append(_name)
         config._parent = self
@@ -2289,13 +2240,14 @@ class ConfigDict(ConfigBase, Mapping):
         if isinstance(value, str):
             value = dict(_default_string_dict_lexer(value))
         if (type(value) is not dict) and \
-           (not isinstance(value, ConfigDict)):
-            raise ValueError("Expected dict value for %s.set_value, found %s" %
-                             (self.name(True), type(value).__name__))
+               (not isinstance(value, ConfigDict)):
+            raise ValueError(
+                f"Expected dict value for {self.name(True)}.set_value, found {type(value).__name__}"
+            )
         if not value:
             return self
-        _implicit = []
         _decl_map = {}
+        _implicit = []
         for key in value:
             _key = str(key).replace(' ', '_')
             if _key in self._data:
@@ -2303,16 +2255,14 @@ class ConfigDict(ConfigBase, Mapping):
                 # when we later iterate over the _decl_order, we can map
                 # the local keys back to the incoming value keys.
                 _decl_map[_key] = key
+            elif skip_implicit:
+                pass
+            elif self._implicit_declaration:
+                _implicit.append(key)
             else:
-                if skip_implicit:
-                    pass
-                elif self._implicit_declaration:
-                    _implicit.append(key)
-                else:
-                    raise ValueError(
-                        "key '%s' not defined for ConfigDict '%s' and "
-                        "implicit (undefined) keys are not allowed" %
-                        (key, self.name(True)))
+                raise ValueError(
+                    f"key '{key}' not defined for ConfigDict '{self.name(True)}' and implicit (undefined) keys are not allowed"
+                )
 
         # If the set_value fails part-way through the new values, we
         # want to restore a deterministic state.  That is, either
@@ -2359,9 +2309,7 @@ class ConfigDict(ConfigBase, Mapping):
                 level += 1
         for key in self._decl_order:
             cfg = self._data[key]
-            for v in cfg._data_collector(
-                    level, cfg._name + ': ', visibility, docMode):
-                yield v
+            yield from cfg._data_collector(level, f'{cfg._name}: ', visibility, docMode)
 
 # Backwards compatibility: ConfigDict was originally named ConfigBlock.
 ConfigBlock = ConfigDict

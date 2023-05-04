@@ -12,18 +12,12 @@ model.demand = Param(model.sinks)
 model.amount = Var(model.arcs, within=NonNegativeReals)
 
 def totalRule(model):
-    expression = sum(
-      model.amount[i,j]
-      for (i, j) in model.arcs
-      if j in model.sinks
-    )
-    return expression
+    return sum(model.amount[i, j] for (i, j) in model.arcs if j in model.sinks)
 
 model.maxFlow = Objective(rule=totalRule, sense=maximize)
 
 def maxRule(model, arcIn, arcOut):
-    constraint_equation = (model.amount[arcIn, arcOut] <= model.upperBound[arcIn, arcOut])
-    return constraint_equation
+    return (model.amount[arcIn, arcOut] <= model.upperBound[arcIn, arcOut])
 
 model.loadOnArc = Constraint(model.arcs, rule=maxRule)
 
@@ -34,7 +28,7 @@ def flowRule(model, node):
           for (i,j) in model.arcs
           if i == node
         )
-        constraint_equation = ( flow_out <= model.supply[node] )
+        return ( flow_out <= model.supply[node] )
 
     elif node in model.sinks:
         flow_in = sum(
@@ -42,7 +36,7 @@ def flowRule(model, node):
           for (i,j) in model.arcs
           if j == node
         )
-        constraint_equation = (flow_in >= model.demand[node])
+        return (flow_in >= model.demand[node])
 
     else:
         amountIn = sum(
@@ -55,8 +49,6 @@ def flowRule(model, node):
           for (i,j) in model.arcs
           if i == node
         )
-        constraint_equation = ( amountIn == amountOut )
-
-    return constraint_equation
+        return ( amountIn == amountOut )
 
 model.flow = Constraint(model.nodes, rule=flowRule)

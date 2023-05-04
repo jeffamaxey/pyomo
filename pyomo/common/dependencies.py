@@ -70,8 +70,9 @@ class ModuleUnavailable(object):
 
     def __getattr__(self, attr):
         if attr in ModuleUnavailable._getattr_raises_attributeerror:
-            raise AttributeError("'%s' object has no attribute '%s'"
-                                 % (type(self).__name__, attr))
+            raise AttributeError(
+                f"'{type(self).__name__}' object has no attribute '{attr}'"
+            )
         raise DeferredImportError(self._moduleunavailable_message())
 
     def __getstate__(self):
@@ -99,12 +100,12 @@ class ModuleUnavailable(object):
                     "failed to import: %s" % (self.__name__, _pkg_str, _imp)
                 )
             else:
-                msg = "%s (import raised %s)" % (msg, _imp,)
+                msg = f"{msg} (import raised {_imp})"
         if _ver:
             if not msg or not str(msg):
-                msg = "The %s module %s" % (self.__name__, _ver)
+                msg = f"The {self.__name__} module {_ver}"
             else:
-                msg = "%s (%s)" % (msg, _ver,)
+                msg = f"{msg} ({_ver})"
         return msg
 
     def log_import_warning(self, logger='pyomo', msg=None):
@@ -145,14 +146,20 @@ class DeferredImportModule(object):
         if submodule_name is None:
             submodule_name = ''
         for name in deferred_submodules:
-            if not name.startswith(submodule_name + '.'):
+            if not name.startswith(f'{submodule_name}.'):
                 continue
             _local_name = name[(1+len(submodule_name)):]
             if '.' in _local_name:
                 continue
-            setattr(self, _local_name, DeferredImportModule(
-                indicator, deferred_submodules,
-                submodule_name + '.' + _local_name))
+            setattr(
+                self,
+                _local_name,
+                DeferredImportModule(
+                    indicator,
+                    deferred_submodules,
+                    f'{submodule_name}.{_local_name}',
+                ),
+            )
 
     def __getattr__(self, attr):
         self._indicator_flag.resolve()
@@ -211,9 +218,7 @@ class DeferredImportIndicator(_DeferredImportIndicatorBase):
                  minimum_version, original_globals, callback, importer,
                  deferred_submodules):
         self._names = [name]
-        for _n in tuple(self._names):
-            if '.' in _n:
-                self._names.append(_n.split('.')[-1])
+        self._names.extend(_n.split('.')[-1] for _n in tuple(self._names) if '.' in _n)
         self._error_message = error_message
         self._catch_exceptions = catch_exceptions
         self._minimum_version = minimum_version
@@ -246,9 +251,9 @@ class DeferredImportIndicator(_DeferredImportIndicatorBase):
                 # make sure that we cache the result
                 self._module = ModuleUnavailable(
                     self._names[0],
-                    "Exception raised when importing %s" % (self._names[0],),
+                    f"Exception raised when importing {self._names[0]}",
                     None,
-                    "%s: %s" % (type(e).__name__, e),
+                    f"{type(e).__name__}: {e}",
                     package,
                 )
                 self._available = False
@@ -257,7 +262,7 @@ class DeferredImportIndicator(_DeferredImportIndicatorBase):
             # If this module was not found, then we need to check for
             # deferred submodules and resolve them as well
             if self._deferred_submodules and \
-               type(self._module) is ModuleUnavailable:
+                   type(self._module) is ModuleUnavailable:
                 info = self._module._moduleunavailable_info_
                 for submod in self._deferred_submodules:
                     refmod = self._module
@@ -489,7 +494,7 @@ def attempt_import(name, error_message=None, only_catch_importerror=None,
             deferred = []
             for _submod in deferred_submodules:
                 if _submod[0] != '.':
-                    _submod = '.' + _submod
+                    _submod = f'.{_submod}'
                 _mod_path = _submod.split('.')
                 for i in range(len(_mod_path)):
                     _test_mod = '.'.join(_mod_path[:i])
@@ -531,10 +536,7 @@ def _perform_import(name, error_message, minimum_version, callback,
     import_error = None
     version_error = None
     try:
-        if importer is None:
-            module = importlib.import_module(name)
-        else:
-            module = importer()
+        module = importlib.import_module(name) if importer is None else importer()
         if ( minimum_version is None
              or check_min_version(module, minimum_version) ):
             if callback is not None:
@@ -542,11 +544,9 @@ def _perform_import(name, error_message, minimum_version, callback,
             return module, True
         else:
             version = getattr(module, '__version__', 'UNKNOWN')
-            version_error = (
-                "version %s does not satisfy the minimum version %s"
-                % (version, minimum_version))
+            version_error = f"version {version} does not satisfy the minimum version {minimum_version}"
     except catch_exceptions as e:
-        import_error = "%s: %s" % (type(e).__name__, e)
+        import_error = f"{type(e).__name__}: {e}"
 
     module = ModuleUnavailable(
         name, error_message, version_error, import_error, package,
@@ -597,15 +597,21 @@ def declare_deferred_modules_as_importable(globals_dict):
 
     """
     _global_name = globals_dict['__name__'] + '.'
-    deferred = list((k, v) for k, v in globals_dict.items()
-                    if type(v) is DeferredImportModule )
+    deferred = [
+        (k, v)
+        for k, v in globals_dict.items()
+        if type(v) is DeferredImportModule
+    ]
     while deferred:
         name, mod = deferred.pop(0)
         mod.__path__ = None
         mod.__spec__ = None
         sys.modules[_global_name + name] = mod
-        deferred.extend((name + '.' + k, v) for k, v in mod.__dict__.items()
-                        if type(v) is DeferredImportModule )
+        deferred.extend(
+            (f'{name}.{k}', v)
+            for k, v in mod.__dict__.items()
+            if type(v) is DeferredImportModule
+        )
 
 
 #

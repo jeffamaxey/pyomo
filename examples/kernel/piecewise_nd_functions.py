@@ -70,14 +70,10 @@ status = glpk.solve(m)
 assert str(status.solver.status) == "ok"
 assert str(status.solver.termination_condition) == "optimal"
 
-print("Approximate f value at MIP solution: %s"
-      % (pw_f((m.x.value, m.y.value))))
-print("Approximate g value at MIP solution: %s"
-      % (pw_g((m.x.value, m.y.value))))
-print("Real f value at MIP solution: %s"
-      % (f(m.x.value, m.y.value)))
-print("Real g value at MIP solution: %s"
-      % (g(m.x.value, m.y.value)))
+print(f"Approximate f value at MIP solution: {pw_f((m.x.value, m.y.value))}")
+print(f"Approximate g value at MIP solution: {pw_g((m.x.value, m.y.value))}")
+print(f"Real f value at MIP solution: {f(m.x.value, m.y.value)}")
+print(f"Real g value at MIP solution: {g(m.x.value, m.y.value)}")
 
 #
 # Solve the real nonlinear model using a local solver
@@ -89,10 +85,8 @@ ipopt = pmo.SolverFactory("ipopt")
 status = ipopt.solve(m)
 assert str(status.solver.status) == "ok"
 assert str(status.solver.termination_condition) == "optimal"
-print("Real f value at NL solution: %s"
-      % (f(m.x.value, m.y.value)))
-print("Real g value at NL solution: %s"
-      % (f(m.x.value, m.y.value)))
+print(f"Real f value at NL solution: {f(m.x.value, m.y.value)}")
+print(f"Real g value at NL solution: {f(m.x.value, m.y.value)}")
 
 if show_plots:
 

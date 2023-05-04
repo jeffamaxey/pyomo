@@ -350,7 +350,7 @@ def find_library(libname, cwd=True, include_PATH=True, pathlist=None):
     lib = find_file(libname, cwd=cwd, ext=ext, pathlist=pathlist)
     if lib is None and not libname.startswith('lib'):
         # Search 2: prepend 'lib' (with extensions) in our paths
-        lib = find_file('lib'+libname, cwd=cwd, ext=ext, pathlist=pathlist)
+        lib = find_file(f'lib{libname}', cwd=cwd, ext=ext, pathlist=pathlist)
     if lib is not None:
         return lib
     # Search 3: use ctypes.util.find_library (which expects 'lib' and
@@ -442,7 +442,7 @@ def import_file(path, clear_cache=False, infer_package=True, module_name=None):
         while module_dir and os.path.exists(
                 os.path.join(module_dir, '__init__.py')):
             module_dir, mod = os.path.split(module_dir)
-            module_name = mod + '.' + module_name
+            module_name = f'{mod}.{module_name}'
     if clear_cache and module_name in sys.modules:
         del sys.modules[module_name]
     sys.path.insert(0, module_dir)
@@ -473,10 +473,7 @@ class PathData(object):
 
         """
         if self._status is None:
-            if self._path_override:
-                target = self._path_override
-            else:
-                target = self._registered_name
+            target = self._path_override if self._path_override else self._registered_name
             tmp = self._mngr._find(target, pathlist=self._mngr.pathlist)
             self._path = tmp if tmp else self._path_override
             self._status = bool(tmp)
@@ -540,9 +537,7 @@ class PathData(object):
 
     def __str__(self):
         ans = self.path()
-        if not ans:
-            return ""
-        return ans
+        return ans if ans else ""
 
 
 class ExecutableData(PathData):
@@ -726,10 +721,7 @@ def register_executable(name, validate=None):
     version='5.6.2')
 def registered_executable(name):
     ans = Executable(name)
-    if ans.path() is None:
-        return None
-    else:
-        return ans
+    return None if ans.path() is None else ans
 
 @deprecated("pyomo.common.unregister_executable(name) has been deprecated; "
             "use Executable(name).disable()",

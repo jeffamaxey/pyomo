@@ -43,9 +43,8 @@ if False:
     def check(self, runner, script, info):
         if isinstance(info, ast.FunctionDef):
             for arg in info.args.args:
-                if isinstance(arg, ast.Name):
-                    if arg.id in script.modelVars:
-                        self.problem("Function {0} may shadow model variable {1}".format(info.name, arg.id), lineno=info.lineno)
+                if isinstance(arg, ast.Name) and arg.id in script.modelVars:
+                    self.problem("Function {0} may shadow model variable {1}".format(info.name, arg.id), lineno=info.lineno)
 
 
 class ModelAccess(IterativeTreeChecker, ModelTrackerHook):
@@ -67,7 +66,9 @@ class ModelAccess(IterativeTreeChecker, ModelTrackerHook):
             for attrNode in attrNodes:
                 if attrNode.value.id in script.modelVars:
                     args = getattr(script, 'functionArgs', [])
-                    if len(args) > 0 and not attrNode.value.id in list(arg_name(arg) for arg in args[-1].args):
+                    if args and attrNode.value.id not in [
+                        arg_name(arg) for arg in args[-1].args
+                    ]:
                         # NOTE: this probably will not catch arguments defined as keyword arguments.
                         self.problem("Expression '{0}.{1}' may access a model variable that is outside of the function scope".format(attrNode.value.id, attrNode.attr), lineno=attrNode.lineno)
 
@@ -88,10 +89,12 @@ class ModelArgument(_ModelRuleChecker):
     def checkBody(self, funcdef):
         for bodyNode in funcdef.body:
             for node in ast.walk(bodyNode):
-                if isinstance(node, ast.Attribute):
-                    if isinstance(node.value, ast.Name):
-                        if node.value.id != arg_name(funcdef.args.args[0]):
-                            self.problem("Model variable '{0}' is used in the rule, but this variable is not first argument in the rule argument list".format(node.value.id), lineno=funcdef.lineno)
+                if (
+                    isinstance(node, ast.Attribute)
+                    and isinstance(node.value, ast.Name)
+                    and node.value.id != arg_name(funcdef.args.args[0])
+                ):
+                    self.problem("Model variable '{0}' is used in the rule, but this variable is not first argument in the rule argument list".format(node.value.id), lineno=funcdef.lineno)
 
 
 class NoneReturn(_ModelRuleChecker):
@@ -106,7 +109,9 @@ class NoneReturn(_ModelRuleChecker):
     def checkBody(self, funcdef):
         """Look for statements of the format 'return None'"""
         for node in ast.walk(funcdef):
-            if isinstance(node, ast.Return):
-                if isinstance(node.value, ast.Name):
-                    if node.value.id == 'None':
-                        self.problem("Cannot return None from model rule {0}".format(funcdef.name), lineno=funcdef.lineno)
+            if (
+                isinstance(node, ast.Return)
+                and isinstance(node.value, ast.Name)
+                and node.value.id == 'None'
+            ):
+                self.problem("Cannot return None from model rule {0}".format(funcdef.name), lineno=funcdef.lineno)

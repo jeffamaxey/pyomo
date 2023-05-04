@@ -31,7 +31,7 @@ class PyomoModelChecker(SingletonPlugin):
     def _check(self, runner, script, info):
         self._runner = runner
         self._script = script
-        
+
         for prehook in self._prehooks:
             prehook.precheck(runner, script, info)
 
@@ -39,7 +39,7 @@ class PyomoModelChecker(SingletonPlugin):
             self.check(runner, script, info)
         except Exception:
             e = sys.exc_info()[1]
-            print(self.checkerLabel() + "ERROR during check call!")
+            print(f"{self.checkerLabel()}ERROR during check call!")
             raise e
 
         for posthook in self._posthooks:
@@ -60,7 +60,7 @@ class PyomoModelChecker(SingletonPlugin):
         try:
             self.beginChecking(runner, script)
         except Exception:
-            print(self.checkerLabel() + "ERROR during pre-check call!")
+            print(f"{self.checkerLabel()}ERROR during pre-check call!")
 
     def beginChecking(self, runner, script):
         pass
@@ -69,7 +69,7 @@ class PyomoModelChecker(SingletonPlugin):
         try:
             self.endChecking(runner, script)
         except Exception:
-            print(self.checkerLabel() + "ERROR during pre-check call!")
+            print(f"{self.checkerLabel()}ERROR during pre-check call!")
 
         self._currentRunner = None
         self._currentScript = None
@@ -79,14 +79,14 @@ class PyomoModelChecker(SingletonPlugin):
 
     def _checkerName(self):
         match = re.search(r"<class '([a-zA-Z0-9_\.]+)'>", str(self.__class__))
-        return match.group(1).split(".")[-1]
+        return match[1].split(".")[-1]
 
     def _checkerPackage(self):
         match = re.search(r"<class '([a-zA-Z0-9_\.]+)'>", str(self.__class__))
-        return match.group(1).split(".")[-3]
+        return match[1].split(".")[-3]
         
     def checkerLabel(self):
-        return "[" + self._checkerPackage() + "::" + self._checkerName() + "] "
+        return f"[{self._checkerPackage()}::{self._checkerName()}] "
 
     def checkerDoc(self):
         return ""
@@ -100,13 +100,13 @@ class PyomoModelChecker(SingletonPlugin):
         output = self.checkerLabel()
 
         if script is not None:
-            output += script.filename() + ":"
+            output += f"{script.filename()}:"
             if lineno is not None:
-                output += str(lineno) + ":"
+                output += f"{str(lineno)}:"
         else:
             output += "<unknown>:"
 
-        output += " " + message
+        output += f" {message}"
 
         print(output)
 
@@ -119,7 +119,7 @@ class PyomoModelChecker(SingletonPlugin):
                         print(self.checkerLabel() + line)
                 print
         except Exception:
-            print(self.checkerLabel() + "ERROR during verbose info generation")
+            print(f"{self.checkerLabel()}ERROR during verbose info generation")
             print
 
 

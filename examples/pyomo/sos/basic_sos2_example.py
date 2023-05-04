@@ -40,24 +40,14 @@ def A_param_init ( model, c, v):
     return data[ c -1 ][ v -1 ]  # -1 because Python is 0-based
 
 
-def obj_rule ( model ):
-    objective_expression = sum(
-      model.c[ i ] * model.x[ i ]
-      for i in model.variable_set
+def obj_rule( model ):
+    return sum(model.c[i] * model.x[i] for i in model.variable_set)
+
+
+def constraint_rule( model, c):
+    return model.b[c] >= sum(
+        model.A[c, i] * model.x[i] for i in model.variable_set
     )
-
-    return objective_expression
-
-
-def constraint_rule ( model, c):
-    constraint_equation = (
-      model.b[ c ] >= sum(
-        model.A[c, i] * model.x[ i ]
-        for i in model.variable_set
-      )
-    )
-
-    return constraint_equation
 
 
 x1_constraint_rule = lambda M: M.x[1] <= 40

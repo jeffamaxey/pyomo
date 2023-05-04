@@ -14,7 +14,7 @@ def get_title(fname):
         #print sline
         #print sline[0:2]
         #print '.%s.' % sline[-2:]
-        if sline[0:2] == '= ' and sline[-2:] == ' =':
+        if sline[:2] == '= ' and sline[-2:] == ' =':
             tmp = sline[2:-2]
             tmp.strip()
             return tmp

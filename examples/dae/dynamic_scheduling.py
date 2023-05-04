@@ -67,10 +67,10 @@ def _noclash(disjunct, AthenB):
     model = disjunct.model()
     if AthenB:
         e = model.tstart['A']+model.tproc['A'] <= model.tstart['B']
-        disjunct.c = Constraint(expr=e)
     else:
         e = model.tstart['B']+model.tproc['B'] <= model.tstart['A']
-        disjunct.c = Constraint(expr=e)
+
+    disjunct.c = Constraint(expr=e)
 m.noclash = Disjunct(m.AthenB, rule=_noclash)
 
 # Define the disjunctions: either job I occurs before K or K before I

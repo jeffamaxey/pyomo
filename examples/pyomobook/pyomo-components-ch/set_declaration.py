@@ -24,7 +24,7 @@ model = pyo.AbstractModel()
 
 # @decl6:
 model.E = pyo.Set([1,2,3])
-f = set([1,2,3])
+f = {1, 2, 3}
 model.F = pyo.Set(f)
 # @:decl6
 

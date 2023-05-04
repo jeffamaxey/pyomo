@@ -47,9 +47,8 @@ def pyomo_print_instance(options=None, instance=None):
 
 # @save_instance:
 def pyomo_save_instance(options=None, instance=None):
-    OUTPUT = open('abstract7.pyomo','w')
-    OUTPUT.write(str(pickle.dumps(instance)))
-    OUTPUT.close()
+    with open('abstract7.pyomo','w') as OUTPUT:
+        OUTPUT.write(str(pickle.dumps(instance)))
 # @:save_instance
 
 # @print_results:
@@ -61,9 +60,8 @@ def pyomo_print_results(options=None, instance=None,
 # @save_results:
 def pyomo_save_results(options=None, instance=None,
                        results=None):
-    OUTPUT = open('abstract7.results','w')
-    OUTPUT.write(str(results))
-    OUTPUT.close()
+    with open('abstract7.results','w') as OUTPUT:
+        OUTPUT.write(str(results))
 # @:save_results
 
 # @postprocess:
@@ -71,5 +69,5 @@ def pyomo_postprocess(options=None, instance=None,
                       results=None):
     instance.solutions.load_from(results, \
              allow_consistent_values_for_fixed_vars=True)
-    print("Solution value "+str(pyo.value(instance.obj)))
+    print(f"Solution value {str(pyo.value(instance.obj))}")
 # @:postprocess

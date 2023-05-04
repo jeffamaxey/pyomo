@@ -21,36 +21,25 @@ m.dudx = DerivativeVar(m.u,wrt=(m.x,m.x))
 m.dudy = DerivativeVar(m.u,wrt=(m.y,m.y))
 
 def _lowerY(m,i):
-    if i == 0 or i == 1:
-        return Constraint.Skip
-    return m.u[i,0] == 1
+    return Constraint.Skip if i in [0, 1] else m.u[i,0] == 1
 m.lowerY = Constraint(m.x,rule=_lowerY)
 
 def _upperY(m,i):
-    if i == 0 or i == 1:
-        return Constraint.Skip
-    return m.u[i,1] == 2
+    return Constraint.Skip if i in [0, 1] else m.u[i,1] == 2
 m.upperY = Constraint(m.x,rule=_upperY)
 
 def _lowerX(m,j):
-    if j == 0 or j == 1:
-        return Constraint.Skip
-    return m.u[0,j] == 1
+    return Constraint.Skip if j in [0, 1] else m.u[0,j] == 1
 m.lowerX = Constraint(m.y,rule=_lowerX)
 
 def _upperX(m,j):
-    if j == 0 or j == 1:
-        return Constraint.Skip
-    return m.u[1,j] == 2
+    return Constraint.Skip if j in [0, 1] else m.u[1,j] == 2
 m.upperX = Constraint(m.y,rule=_upperX)
 
 def _laplace(m,i,j):
-    if i == 0 or i == 1:
+    if i in [0, 1]:
         return Constraint.Skip
-    if j == 0 or j == 1:
-        return Constraint.Skip
-
-    return m.dudx[i,j] + m.dudy[i,j] == 0
+    return Constraint.Skip if j in [0, 1] else m.dudx[i,j] + m.dudy[i,j] == 0
 m.laplace = Constraint(m.x,m.y,rule=_laplace)
 
 def _dummy(m):

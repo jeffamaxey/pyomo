@@ -7,11 +7,7 @@ def create_model(N):
     model.A = RangeSet(N)
     model.x = Var(model.A, bounds=(1,2))
 
-    expr=0
-    for i in model.A:
-        if not (i+1) in model.A:
-            continue
-        expr += i*(model.x[i]*model.x[i+1]+1)
+    expr = sum(i*(model.x[i]*model.x[i+1]+1) for i in model.A if i+1 in model.A)
     model.obj = Objective(expr=expr)
 
     return model

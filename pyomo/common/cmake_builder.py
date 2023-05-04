@@ -33,6 +33,8 @@ def build_cmake_project(targets, package_name=None, description=None,
     from setuptools import Extension
     from distutils.command.build_ext import build_ext
 
+
+
     class _CMakeBuild(build_ext, object):
         def run(self):
             for cmake_ext in self.extensions:
@@ -41,8 +43,7 @@ def build_cmake_project(targets, package_name=None, description=None,
         def _cmake_build_target(self, cmake_ext):
             cmake_config = 'Debug' if self.debug else 'Release'
             cmake_args = [
-                '-DCMAKE_INSTALL_PREFIX=' + envvar.PYOMO_CONFIG_DIR,
-                #'-DCMAKE_BUILD_TYPE=' + cmake_config,
+                f'-DCMAKE_INSTALL_PREFIX={envvar.PYOMO_CONFIG_DIR}'
             ] + cmake_ext.user_args
 
             try:
@@ -80,6 +81,7 @@ def build_cmake_project(targets, package_name=None, description=None,
                 sys.stdout.flush()
                 os.dup2(old_stderr, sys.stderr.fileno())
                 os.environ = old_environ
+
 
     class CMakeExtension(Extension, object):
         def __init__(self, target_dir, user_args, parallel):

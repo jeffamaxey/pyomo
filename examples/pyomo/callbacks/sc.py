@@ -20,25 +20,21 @@ def print_model_stats(options,model):
         print("DEFAULT")
     else:
         print(options.type)
-    rowc = {}
-    for i in model.I:
-        rowc[i] = 0
-    colc = {}
-    for i in model.J:
-        colc[i] = 0
+    rowc = {i: 0 for i in model.I}
+    colc = {i: 0 for i in model.J}
     for (i,j) in model.S:
             rowc[i] += 1        
-            colc[j] += 1        
+            colc[j] += 1
     print("Row Counts")
     s = 0.0
     for i in sorted(rowc):
         s += rowc[i]
-    print("Average: %s" % str(s/len(rowc)))
+    print(f"Average: {str(s / len(rowc))}")
     print("Col Counts")
     s = 0.0
     for i in sorted(colc):
         s += colc[i]
-    print("Average: %s" % str(s/len(colc)))
+    print(f"Average: {str(s / len(colc))}")
     print("I %d" % len(model.I))
     print("J %d" % len(model.J))
     print("-"*40)
@@ -138,10 +134,12 @@ def pyomo_create_model(options=None, model_options=None):
     # some rows or columns of S may not be populated.
     #
     def I_rule(model):
-        return set((i for (i,j) in model.S))
+        return {i for (i,j) in model.S}
+
     model.I = Set(initialize=I_rule)
     def J_rule(model):
-        return set((j for (i,j) in model.S))
+        return {j for (i,j) in model.S}
+
     model.J = Set(initialize=J_rule)
     #
     # Weights
@@ -156,6 +154,7 @@ def pyomo_create_model(options=None, model_options=None):
     #
     def cost_rule(model):
         return sum_product(model.w, model.x)
+
     model.cost = Objective(rule=cost_rule)
 
     #
@@ -172,6 +171,7 @@ def pyomo_create_model(options=None, model_options=None):
         #if expr is 0:
             #return Constraint.Skip
         return expr >= 1
+
     model.cover = Constraint(model.I, rule=cover_rule)
 
     #

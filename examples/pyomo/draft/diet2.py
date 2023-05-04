@@ -64,6 +64,5 @@ def Diet_rule(model, i):
     for j in model.FOOD:
         expr = expr + model.amt[i,j] * model.Buy[j]
     expr = expr > 2*model.n_min[i]
-    expr = expr < 2*model.n_max[i]
-    return expr
+    return expr < 2*model.n_max[i]
 model.Diet = Constraint(model.NUTR, rule=Diet_rule)

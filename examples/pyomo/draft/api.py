@@ -80,10 +80,7 @@ model.A = Set(initialize=f)
 def f(model, i):
     if i==10:
         return Set.End
-    if i==0:
-        return 1
-    else:
-        return model.A[i-1] * (i+1)
+    return 1 if i==0 else model.A[i-1] * (i+1)
 model.A = Set(ordered=True, initialize=f)
 #
 #  Option 'within' specifies a set that is used to validate set elements
@@ -516,8 +513,7 @@ def f(model, i):
 def f(model, i):
     expr = model.Z[i] * model.A[i]
     expr = expr >= 0
-    expr = expr <= 1
-    return expr
+    return expr <= 1
 #
 # The following illustrate the type of bounds information that can be
 # specified:
@@ -535,19 +531,11 @@ def f(model, i):
 # constraints are equivalent:
 #
 def f1(model, i):
-    if i % 2 == 0:
-        return Constraint.Skip
-    expr = model.Z[i] * model.A[i]
-    return (0, expr, 1)
+    return Constraint.Skip if i % 2 == 0 else (0, model.Z[i] * model.A[i], 1)
 model.con1 = Constraint(model.A, rule=f1)
 
 def f2(model):
-    res = {}
-    for i in model.A:
-        if i % 2 != 0:
-            expr = model.Z[i] * model.A[i]
-            res[i] = (0, expr, 1)
-    return res
+    return {i: (0, model.Z[i] * model.A[i], 1) for i in model.A if i % 2 != 0}
 model.con2 = Constraint(model.A, rule=f2)
 
 ####

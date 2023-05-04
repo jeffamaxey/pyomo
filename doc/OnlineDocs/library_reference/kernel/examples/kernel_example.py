@@ -6,9 +6,7 @@ data = None
 
 # @AbstractModels
 def create(data):
-    instance = pmo.block()
-    # ... define instance ...
-    return instance
+    return pmo.block()
 instance = create(data)
 # @AbstractModels
 del data

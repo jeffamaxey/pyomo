@@ -7,18 +7,49 @@
 #
 
 # Define data for the graph of interest.
-vertices = set(['Ar', 'Bo', 'Br', 'Ch', 'Co', 'Ec', 
-                'FG', 'Gu', 'Pa', 'Pe', 'Su', 'Ur', 'Ve'])
+vertices = {
+    'Ar',
+    'Bo',
+    'Br',
+    'Ch',
+    'Co',
+    'Ec',
+    'FG',
+    'Gu',
+    'Pa',
+    'Pe',
+    'Su',
+    'Ur',
+    'Ve',
+}
 
-edges = set([('FG','Su'), ('FG','Br'), ('Su','Gu'),
-             ('Su','Br'), ('Gu','Ve'), ('Gu','Br'),
-             ('Ve','Co'), ('Ve','Br'), ('Co','Ec'),
-             ('Co','Pe'), ('Co','Br'), ('Ec','Pe'),
-             ('Pe','Ch'), ('Pe','Bo'), ('Pe','Br'),
-             ('Ch','Ar'), ('Ch','Bo'), ('Ar','Ur'),
-             ('Ar','Br'), ('Ar','Pa'), ('Ar','Bo'),
-             ('Ur','Br'), ('Bo','Pa'), ('Bo','Br'),
-             ('Pa','Br')])
+edges = {
+    ('FG', 'Su'),
+    ('FG', 'Br'),
+    ('Su', 'Gu'),
+    ('Su', 'Br'),
+    ('Gu', 'Ve'),
+    ('Gu', 'Br'),
+    ('Ve', 'Co'),
+    ('Ve', 'Br'),
+    ('Co', 'Ec'),
+    ('Co', 'Pe'),
+    ('Co', 'Br'),
+    ('Ec', 'Pe'),
+    ('Pe', 'Ch'),
+    ('Pe', 'Bo'),
+    ('Pe', 'Br'),
+    ('Ch', 'Ar'),
+    ('Ch', 'Bo'),
+    ('Ar', 'Ur'),
+    ('Ar', 'Br'),
+    ('Ar', 'Pa'),
+    ('Ar', 'Bo'),
+    ('Ur', 'Br'),
+    ('Bo', 'Pa'),
+    ('Bo', 'Br'),
+    ('Pa', 'Br'),
+}
 
 ncolors = 4
 colors = range(1, ncolors+1)

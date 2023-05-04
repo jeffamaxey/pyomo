@@ -90,19 +90,6 @@ class ModelCheckRunner(object):
             else:
                 c.disable()
 
-        # Show checkers if requested
-        if False:
-            printable = {}
-            for c in self._checkers():
-                if c._checkerPackage() not in printable:
-                    printable[c._checkerPackage()] = [c._checkerName()]
-                else:
-                    printable[c._checkerPackage()].append(c._checkerName())
-            
-            for package in printable:
-                print("{0}: {1}".format(package, " ".join(printable[package])))
-            print("")
-
         # Pre-partition checkers
         immDataCheckers = [c for c in self._checkers if isinstance(c, ImmediateDataChecker)]
         iterDataCheckers = [c for c in self._checkers if isinstance(c, IterativeDataChecker)]

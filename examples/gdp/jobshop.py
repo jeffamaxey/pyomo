@@ -45,11 +45,13 @@ def build_model():
     # Start time of each job
     def t_bounds(model, I):
         return (0, sum(value(model.tau[idx]) for idx in model.tau))
+
     model.t = Var( model.JOBS, within=NonNegativeReals, bounds=t_bounds )
 
     # Auto-generate the L set (potential collisions between 2 jobs at any stage.
     def _L_filter(model, I, K, J):
         return I < K and model.tau[I,J] and model.tau[K,J]
+
     model.L = Set( initialize=model.JOBS * model.JOBS * model.STAGES,
                    dimen=3, filter=_L_filter)
 
@@ -57,6 +59,7 @@ def build_model():
     # total duration
     def _feas(model, I):
         return model.ms >= model.t[I] + sum(model.tau[I,M] for M in model.STAGES)
+
     model.Feas = Constraint(model.JOBS, rule=_feas)
 
     # Disjunctions to prevent clashes at a stage: This creates a set of
@@ -64,17 +67,19 @@ def build_model():
     # K occurs before job I.
     def _NoClash(disjunct, I, K, J, IthenK):
         model = disjunct.model()
-        lhs = model.t[I] + sum([M<J and model.tau[I,M] or 0 for M in model.STAGES])
-        rhs = model.t[K] + sum([M<J and model.tau[K,M] or 0 for M in model.STAGES])
+        lhs = model.t[I] + sum(M<J and model.tau[I,M] or 0 for M in model.STAGES)
+        rhs = model.t[K] + sum(M<J and model.tau[K,M] or 0 for M in model.STAGES)
         if IthenK:
             disjunct.c = Constraint(expr=lhs+model.tau[I,J]<=rhs)
         else:
             disjunct.c = Constraint(expr=rhs+model.tau[K,J]<=lhs)
+
     model.NoClash = Disjunct(model.L, model.I_BEFORE_K, rule=_NoClash)
 
     # Define the disjunctions: either job I occurs before K or K before I
     def _disj(model, I, K, J):
         return [model.NoClash[I,K,J,IthenK] for IthenK in model.I_BEFORE_K]
+
     model.disj = Disjunction(model.L, rule=_disj)
 
     # minimize makespan

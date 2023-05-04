@@ -100,9 +100,11 @@ class ReactionNetwork(object):
         pair of forward and reverse reactions.
         """
         self.add(rxn)
-        tmp = Reaction( name= rxn.name+'_r', 
-                        reactants= [(b,a) for a,b in rxn.products.items()],
-                        products= [(b,a) for a,b in rxn.reactants.items()] )
+        tmp = Reaction(
+            name=f'{rxn.name}_r',
+            reactants=[(b, a) for a, b in rxn.products.items()],
+            products=[(b, a) for a, b in rxn.reactants.items()],
+        )
         self.add(tmp)
 
     def species(self):
@@ -372,9 +374,11 @@ def regression_model():
             ax2 = plt.twinx()
             for _i, _x in enumerate(key):
                 _ax = ax2 if _x == 'MeOH' else ax
-                _ax.plot( [ t for t in data[T].keys() ],
-                          [ data[T][t][_i] for t in data[T].keys() ],
-                          'mkrgbc'[_i]+'x' )
+                _ax.plot(
+                    list(data[T].keys()),
+                    [data[T][t][_i] for t in data[T].keys()],
+                    'mkrgbc'[_i] + 'x',
+                )
             for _i, _x in enumerate(key):
                 _ax = ax2 if _x == 'MeOH' else ax
                 _ax.plot([ x.index()[0] for x in model.experiment[T].c[:,_x] ],
